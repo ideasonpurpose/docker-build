@@ -14,7 +14,9 @@ COPY zip.js ./
 # RUN npm install
 
 # for node:11
-RUN apt-get update && apt-get install libgl1-mesa-glx -y
+# RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq \
+    && apt-get install -y libgl1-mesa-glx
 
 # for node:11-alpine
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
