@@ -1,8 +1,8 @@
 # Docker Build Tools
 
-[![dockeri.co](http://dockeri.co/image/ideasonpurpose/docker-build)](https://registry.hub.docker.com/ideasonpurpose/docker-build/)
+[![dockeri.co](http://dockeri.co/image/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)
 
-This repository is the source for Docker AutoBuilds. Get the image on DockerHub: [hub.docker.com/ideasonpurpose/docker-build](https://registry.hub.docker.com/ideasonpurpose/docker-build)
+This repository is the source for Docker AutoBuilds. Get the image on DockerHub: [hub.docker.com/r/ideasonpurpose/docker-build](https://hub.docker.com/r/ideasonpurpose/docker-build)
 
 ## Running a build from Docker
 
