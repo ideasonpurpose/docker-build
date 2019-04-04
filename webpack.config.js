@@ -42,7 +42,7 @@ const config = {
   dist: `../site/wp-content/themes/${pkgName}/dist`,
   vm: `http://${pkgName}.test`,
   // host: ip.v4.sync()
-  host: process.env.HOSTNAME
+  host: process.env.HOSTNAME || 'localhost'
 };
 
 /**
@@ -202,6 +202,9 @@ module.exports = {
       timings: true,
       warnings: true
     },
+    // watchOptions: {
+    //   poll: 1000
+    // },
 
     before: function(app, server) {
       app.all("/inform", () => false);
@@ -220,7 +223,8 @@ module.exports = {
        * Watch PHP files and reload everything on change
        */
       chokidar
-        .watch([`wp-content/themes/${pkgName}/**/*.php`], {
+      // TODO: this path is kind of hidden down here
+        .watch([`../site/wp-content/themes/${pkgName}/**/*.php`], {
           alwaysStat: true,
           atomic: false,
           followSymlinks: false,
@@ -228,7 +232,7 @@ module.exports = {
           ignorePermissionErrors: true,
           persistent: true,
           usePolling: true,
-          interval: 100
+          interval: 500
         })
         .on("all", () => {
           console.log("Chokidar changed, reloading...");
