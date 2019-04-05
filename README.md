@@ -20,7 +20,7 @@ $ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v 
 $ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v %cd%:/usr/src/site ideasonpurpose/docker-build npm run devserver
 ```
 
-Note: If Windows throws a "driver failed programming external connectivity on endpoint" error, restart Docker. See docker/for-win/issues/2722
+Note: If Windows throws a "driver failed programming external connectivity on endpoint" error, restart Docker. See docker/for-win#2722
 
 ### Commands
 
