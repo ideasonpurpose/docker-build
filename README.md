@@ -8,9 +8,19 @@ This repository is the source for Docker AutoBuilds. Get the image on DockerHub:
 
 Example run:
 
+**Mac/Linux**
+
 ```sh
-docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v $PWD:/usr/src/site ideasonpurpose/docker-build npm run devserver
+$ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v $PWD:/usr/src/site ideasonpurpose/docker-build npm run devserver
 ```
+
+**Windows Command Line**
+
+```cmd
+$ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v %cd%:/usr/src/site ideasonpurpose/docker-build npm run devserver
+```
+
+Note: If Windows throws a "driver failed programming external connectivity on endpoint" error, restart Docker. See docker/for-win/issues/2722
 
 ### Commands
 
