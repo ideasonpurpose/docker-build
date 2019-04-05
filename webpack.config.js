@@ -42,7 +42,7 @@ const config = {
   dist: `../site/wp-content/themes/${pkgName}/dist`,
   vm: `http://${pkgName}.test`,
   // host: ip.v4.sync()
-  host: process.env.HOSTNAME || 'localhost'
+  host: process.env.HOSTNAME || "localhost"
 };
 
 /**
@@ -50,7 +50,9 @@ const config = {
  */
 if (!fs.existsSync(path.resolve(config.src))) {
   throw new Error(
-    `src directory '${config.src}' does not exist. Set a NAME environment variable.`
+    `src directory '${
+      config.src
+    }' does not exist. Set a NAME environment variable.`
   );
 }
 
@@ -102,10 +104,7 @@ if (fs.existsSync(`${path.resolve(config.src)}/js/editor-blocks.js`)) {
   entry["editor-blocks"] = "./js/editor-blocks.js";
 }
 
-
-
 module.exports = {
-
   module: {
     rules: [
       {
@@ -118,8 +117,14 @@ module.exports = {
             presets: [
               [
                 "@babel/preset-env",
-                { forceAllTransforms: true, modules: false, debug: true }
-              ]
+                {
+                  forceAllTransforms: true,
+                  useBuiltIns: "usage",
+                  modules: false,
+                  debug: true
+                }
+              ],
+              "@babel/preset-react"
             ]
           }
         }
@@ -170,8 +175,8 @@ module.exports = {
 
   context: path.resolve(config.src),
 
-  resolveLoader:  {
-    modules: [path.resolve('../tools/node_modules')]
+  resolveLoader: {
+    modules: [path.resolve("../tools/node_modules")]
   },
 
   entry,
@@ -223,7 +228,7 @@ module.exports = {
        * Watch PHP files and reload everything on change
        */
       chokidar
-      // TODO: this path is kind of hidden down here
+        // TODO: this path is kind of hidden down here
         .watch([`../site/wp-content/themes/${pkgName}/**/*.php`], {
           alwaysStat: true,
           atomic: false,
