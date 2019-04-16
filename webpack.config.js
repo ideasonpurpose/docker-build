@@ -40,7 +40,7 @@ const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
 const config = {
   src: `../site/wp-content/themes/${pkgName}/src`,
   dist: `../site/wp-content/themes/${pkgName}/dist`,
-  vm: `http://${pkgName}.test`,
+  vm: process.env.VM || `http://${pkgName}.test`,
   // host: ip.v4.sync()
   host: process.env.HOSTNAME || "localhost"
 };
@@ -55,6 +55,8 @@ if (!fs.existsSync(path.resolve(config.src))) {
     }' does not exist. Set a NAME environment variable.`
   );
 }
+
+console.log('config', config)
 
 const imageminpProdPlugins = [
   imageminGifsicle({ optimizationLevel: 3 }),
