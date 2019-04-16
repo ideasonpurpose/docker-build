@@ -30,19 +30,10 @@ const readPkgUp = require("read-pkg-up");
 const { pkg } = readPkgUp.sync();
 const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
 
-// const config = {
-//   // theme: `./wp-content/themes/${pkgName}`,
-//   src: `./wp-content/themes/${pkgName}/src`,
-//   dist: `./wp-content/themes/${pkgName}/dist`,
-//   vm: `http://${pkgName}.test`,
-//   host: ip.v4.sync()
-// };
 const config = {
   src: `../site/wp-content/themes/${pkgName}/src`,
   dist: `../site/wp-content/themes/${pkgName}/dist`,
-  vm: process.env.VM || `http://${pkgName}.test`,
-  // host: ip.v4.sync()
-  host: process.env.HOSTNAME || "localhost"
+  vm: process.env.VM || `${pkgName}.test` // TODO: Terrible name. Maybe devUrl or devDomain or something
 };
 
 /**
@@ -55,8 +46,6 @@ if (!fs.existsSync(path.resolve(config.src))) {
     }' does not exist. Set a NAME environment variable.`
   );
 }
-
-console.log('config', config)
 
 const imageminpProdPlugins = [
   imageminGifsicle({ optimizationLevel: 3 }),
@@ -261,7 +250,7 @@ module.exports = {
 
     proxy: {
       "**": {
-        target: config.vm,
+        target: `http://${config.vm}`,
         secure: false,
         autoRewrite: true,
         selfHandleResponse: true, // necessary to avoid res.end being called automatically
@@ -278,10 +267,7 @@ module.exports = {
 
         onProxyRes: function(proxyRes, req, res) {
           const replaceTarget = str =>
-            str.replace(
-              new RegExp(`${pkgName}.test`, "gi"),
-              `${config.host}:8080`
-            );
+            str.replace(new RegExp(config.vm, "gi"), req.headers.host);
 
           // Update urls in files with these content-types
           const contentTypes = [
