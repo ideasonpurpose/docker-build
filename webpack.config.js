@@ -120,6 +120,7 @@ module.exports = {
                 {
                   forceAllTransforms: true,
                   useBuiltIns: "usage",
+                  corejs: 3,
                   modules: false,
                   debug: true
                 }
@@ -174,6 +175,13 @@ module.exports = {
   },
 
   context: path.resolve(config.src),
+
+  resolve: {
+    modules: [
+      path.resolve("../tools/node_modules"),
+      path.resolve("../site/node_modules")
+    ]
+  },
 
   resolveLoader: {
     modules: [path.resolve("../tools/node_modules")]
@@ -261,9 +269,9 @@ module.exports = {
         // logLevel: "debug",
 
         onError: (err, req, res) => {
-          console.log("PROXY ERROR: ", req.url, err, req, err.stack);
+          console.log("PROXY ERROR: ", req.url, err, err.stack);
           res.writeHead(500, { "Content-Type": "text-plain" });
-          res.end("PROXY ERROR: " + err);
+          res.end("Proxy Error running Webpack DevServer: " + err);
         },
 
         onProxyRes: function(proxyRes, req, res) {

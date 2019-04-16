@@ -60,6 +60,6 @@ Lots.
 
 > Documentation notes to be cleaned up
 
-Tooling runs from `/usr/src/tools` inside the Docker image. Site files are expected to be in `/usr/src/site`
+Tooling runs from `/usr/src/tools` inside the Docker image. Site files are expected to be mounted to `/usr/src/site`
 
 Requesting `/webpack/reload` from the devserver will will trigger a full reload for all connected clients.
