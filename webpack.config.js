@@ -137,7 +137,7 @@ module.exports = {
             loader: "postcss-loader",
             options: {
               sourceMap: true,
-              plugins: [autoprefixer, ...(isProduction ? cssnano : [])]
+              plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])]
             }
           },
           {
