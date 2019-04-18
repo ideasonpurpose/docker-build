@@ -26,6 +26,8 @@ const cssnano = require("cssnano");
 //      'socket hang up' ECONNRESET errors on every request
 // const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
+ // TODO: These can go away now that we're in Docker
+ //       We still need pkgName, but it should pull from process.env
 const readPkgUp = require("read-pkg-up");
 const { pkg } = readPkgUp.sync();
 const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
@@ -33,7 +35,7 @@ const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
 const config = {
   src: `../site/wp-content/themes/${pkgName}/src`,
   dist: `../site/wp-content/themes/${pkgName}/dist`,
-  vm: process.env.VM || `${pkgName}.test` // TODO: Terrible name. Maybe devUrl or devDomain or something
+  vm: process.env.VM || pkgName // TODO: Terrible variable name. Maybe devUrl or devDomain or something
 };
 
 /**
@@ -262,7 +264,7 @@ module.exports = {
         onError: (err, req, res) => {
           console.log("PROXY ERROR: ", req.url, err, err.stack);
           res.writeHead(500, { "Content-Type": "text-plain" });
-          res.end("Proxy Error running Webpack DevServer: " + err);
+          res.end("Webpack DevServer Proxy Error: " + err);
         },
 
         onProxyRes: function(proxyRes, req, res) {

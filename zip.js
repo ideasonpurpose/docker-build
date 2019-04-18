@@ -13,7 +13,7 @@ const glob = require("glob");
 const archiver = require("archiver");
 
 const readPkgUp = require("read-pkg-up");
-const { pkg } = readPkgUp.sync();
+const { pkg } = readPkgUp.sync(); // TODO: This can go away now that we're in Docker
 
 const archive = archiver("zip");
 
