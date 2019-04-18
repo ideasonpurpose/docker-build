@@ -16,7 +16,7 @@ COPY zip.js ./
 # for node:11
 # RUN rm -rf /var/lib/apt/lists/*
 RUN apt-get update -qq \
-    && apt-get install -y libgl1-mesa-glx
+    && apt-get install -y libgl1-mesa-glx jq
 
 # for node:11-alpine
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
@@ -25,5 +25,7 @@ RUN npm clean-install
 
 # run apk del build-deps
 
-# CMD ["build"]
-# ENTRYPOINT ["echo", "hello"]
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]

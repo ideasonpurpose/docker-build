@@ -24,25 +24,21 @@ Note: If Windows throws a "driver failed programming external connectivity on en
 
 ### Commands
 
-This should likely be masked behind simple npm run commands. They're not compliicated, just messy.
+Known script commands can be executed using just their name, no need to prefix with `npm run`.
 
 #### `build`
 
 Runs a webpack production build. This will also generate a zipped snapshot. _(todo: does this work?)_
 
-#### `devserver`
+#### `start`
 
-Runs webpack DevServer
+Builds assets, starts the Webpack DevServer and watches files for changes.
 
 ### Environment vars
 
 #### `NAME`
 
-The name of the project, should match the directory containing the site files.
-
-#### `HOSTNAME`
-
-The IP or local address of the host. Used for accessing the devserver from other devices on the same local network.
+The name of the project, ideaslly the `name` property from package.json. This should match the directory containing the project files.
 
 ### Volumes
 
@@ -53,7 +49,7 @@ Mount the project's web root directory to `/usr/src/site`
 Lots.
 
 - config file (load `/usr/src/site/_config.yml` from our webpack config)
-- auto-inject local hostname or IP
+- ~~auto-inject local hostname or IP~~
 - ~~Docker autobuilds~~
 
 ## Notes
