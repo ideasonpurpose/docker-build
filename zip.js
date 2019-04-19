@@ -12,14 +12,18 @@ const prettyHrtime = require("pretty-hrtime");
 const glob = require("glob");
 const archiver = require("archiver");
 
-const readPkgUp = require("read-pkg-up");
-const { pkg } = readPkgUp.sync(); // TODO: This can go away now that we're in Docker
+ // TODO: These can go away now that we're in Docker
+ //       We still need pkgName, but it should pull from process.env
+ const readPkgUp = require("read-pkg-up");
+ process.chdir('/usr/src/site');  // TODO: clunky. can this be more portable and less hard-coded:?
+ const { pkg } = readPkgUp.sync();
+ const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
 
 const archive = archiver("zip");
 
 const versionDir =
-  pkg && pkg.name && pkg.version
-    ? `${pkg.name}-${pkg.version}`.replace(/[ .]/g, "_")
+  pkg && pkgName && pkg.version
+    ? `${pkgName}-${pkg.version}`.replace(/[ .]/g, "_")
     : "archive";
 const zipFile = `builds/${versionDir}.zip`;
 
@@ -54,7 +58,7 @@ archive.pipe(output);
 
 const spinner = ora("Adding files to archive").stopAndPersist();
 const start = process.hrtime();
-const globOpts = { cwd: `./wp-content/themes/${pkg.name}`, nodir: true };
+const globOpts = { cwd: `./wp-content/themes/${pkgName}`, nodir: true };
 
 globPromise("**/*", globOpts)
   .then(fileList =>
