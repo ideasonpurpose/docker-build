@@ -46,9 +46,8 @@ Mount the project's web root directory to `/usr/src/site`
 
 ## Todo
 
-Lots.
-
 - config file (load `/usr/src/site/_config.yml` from our webpack config)
+- Shrink image, start from node:11-slim or node:11-alpine
 - ~~auto-inject local hostname or IP~~
 - ~~Docker autobuilds~~
 
