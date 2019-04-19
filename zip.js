@@ -12,12 +12,12 @@ const prettyHrtime = require("pretty-hrtime");
 const glob = require("glob");
 const archiver = require("archiver");
 
- // TODO: These can go away now that we're in Docker
- //       We still need pkgName, but it should pull from process.env
- const readPkgUp = require("read-pkg-up");
- process.chdir('/usr/src/site');  // TODO: clunky. can this be more portable and less hard-coded:?
- const { pkg } = readPkgUp.sync();
- const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
+// TODO: These can go away now that we're in Docker
+//       We still need pkgName, but it should pull from process.env
+const readPkgUp = require("read-pkg-up");
+process.chdir("/usr/src/site"); // TODO: clunky. can this be more portable and less hard-coded:?
+const { pkg } = readPkgUp.sync();
+const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
 
 const archive = archiver("zip");
 
@@ -70,7 +70,15 @@ globPromise("**/*", globOpts)
       };
 
       if (isTextPath(f)) {
-        file.contents = file.contents.pipe(replaceStream(/ello/gi, "owdy!!"));
+        /**
+         * Replace the dev folder name with the versioned folder name in hard-coded
+         * include paths. This might only apply to composer's generated autoload
+         * files, but might as well check everything.
+         */
+        const devPath = new RegExp(`wp-content/themes/${pkgName}/`, "gi");
+        file.contents = file.contents.pipe(
+          replaceStream(devPath, `wp-content/themes/${versionDir}/`)
+        );
       }
 
       file.contents.on("data", chunk => {
