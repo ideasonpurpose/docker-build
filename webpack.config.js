@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 
 const webpack = require("webpack");
-const ip = require("internal-ip");
 
 const chokidar = require("chokidar");
 
@@ -26,8 +25,8 @@ const cssnano = require("cssnano");
 //      'socket hang up' ECONNRESET errors on every request
 // const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
- // TODO: These can go away now that we're in Docker
- //       We still need pkgName, but it should pull from process.env
+// TODO: These can go away now that we're in Docker
+//       We still need pkgName, but it should pull from process.env
 const readPkgUp = require("read-pkg-up");
 const { pkg } = readPkgUp.sync();
 const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
@@ -129,9 +128,7 @@ module.exports = {
           isProduction ? MiniCssExtractPlugin.loader : "style-loader",
           {
             loader: "css-loader",
-            options: {
-              sourceMap: true
-            }
+            options: { sourceMap: true }
           },
           {
             loader: "postcss-loader",
@@ -161,6 +158,15 @@ module.exports = {
               limit: 8192,
               name: "images/[name]-[hash:6].[ext]"
             }
+          }
+        ]
+      },
+      {
+        test: /fonts\/.*\.(ttf|eot|woff2?)/i,
+        use: [
+          {
+            loader: "file-loader",
+            options: { name: "fonts/[name].[ext]" }
           }
         ]
       }
@@ -331,7 +337,7 @@ module.exports = {
     new ManifestPlugin({ writeToFileEmit: true }),
     new copyPlugin([{ from: "**/*", cache: true }], {
       logLevel: isProduction ? "info" : "warn",
-      ignore: [".DS_Store", "js/**/*", "sass/**/*"]
+      ignore: [".DS_Store", "js/**/*", "sass/**/*", "fonts/**/*"]
     }),
 
     new ImageminPlugin({
