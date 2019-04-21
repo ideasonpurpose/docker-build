@@ -10,11 +10,12 @@
   "main": "index.js",
   "scripts": {
     "build": "NODE_ENV=production webpack",
-    "postbuild": "node zip.js",
+    "postbuild": "npm run zip",
     "env": "env",
     "devserver": "npm run start",
     "start": "webpack-dev-server",
-    "webpack": "webpack"
+    "webpack": "webpack",
+    "zip": "node zip.js"
   },
   "dependencies": {
     "@babel/core": "^7.4.3",

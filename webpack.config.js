@@ -93,7 +93,7 @@ const entry = {
 };
 
 if (fs.existsSync(`${path.resolve(config.src)}/js/editor-blocks.js`)) {
-  entry["editor-blocks"] = "./js/editor-blocks.js";
+  entry["admin-editor-blocks"] = "./js/editor-editor-blocks.js";
 }
 
 module.exports = {
@@ -356,5 +356,28 @@ module.exports = {
     //   },
     //   { reload: false }
     // )
-  ]
+  ],
+  optimization: {
+    splitChunks: {
+      chunks: "async",
+      minSize: 30000,
+      maxSize: 100000,
+      minChunks: 1,
+      maxAsyncRequests: 3,
+      maxInitialRequests: 3,
+      automaticNameDelimiter: "~",
+      name: true,
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        }
+      }
+    }
+  }
 };
