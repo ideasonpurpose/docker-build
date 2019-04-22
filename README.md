@@ -34,6 +34,10 @@ Runs a webpack production build. This will also generate a zipped snapshot. _(to
 
 Builds assets, starts the Webpack DevServer and watches files for changes.
 
+#### `analyze`
+
+Runs a webpack production build then starts the Webpack Bundle Analyzer. Connect a local port to 8080 to view.
+
 ### Environment vars
 
 #### `NAME`

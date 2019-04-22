@@ -9,6 +9,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const ManifestPlugin = require("webpack-manifest-plugin");
 const copyPlugin = require("copy-webpack-plugin");
+const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const ImageminPlugin = require("imagemin-webpack");
 const imageminGifsicle = require("imagemin-gifsicle");
@@ -31,6 +32,13 @@ const readPkgUp = require("read-pkg-up");
 const { pkg } = readPkgUp.sync();
 const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
 
+/**
+ * Force mode: production when running the analyzer
+ */
+if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
+
+const isProduction = process.env.NODE_ENV === "production";
+
 const config = {
   src: `../site/wp-content/themes/${pkgName}/src`,
   dist: `../site/wp-content/themes/${pkgName}/dist`,
@@ -46,6 +54,24 @@ if (!fs.existsSync(path.resolve(config.src))) {
       config.src
     }' does not exist. Set a NAME environment variable.`
   );
+}
+
+const analyzerSettings = {
+  analyzerMode: isProduction ? "static" : "disabled",
+  generateStatsFile: isProduction,
+  reportFilename: "./webpack/stats/index.html",
+  statsFilename: "./webpack/stats/stats.json"
+};
+
+if (process.env.WEBPACK_BUNDLE_ANALYZER) {
+  // analyzerSettings.analyzerMode = "server";
+  // analyzerSettings.analyzerHost = "0.0.0.0";
+  // analyzerSettings.analyzerPort = 8080;
+  Object.assign(analyzerSettings, {
+    analyzerMode: "server",
+    analyzerHost: "0.0.0.0",
+    analyzerPort: 8080
+  });
 }
 
 const imageminpProdPlugins = [
@@ -84,8 +110,6 @@ const imageminDevPlugins = [
     ]
   })
 ];
-
-const isProduction = process.env.NODE_ENV === "production";
 
 const entry = {
   app: "./js/index.js",
@@ -347,7 +371,7 @@ module.exports = {
       imageminOptions: {
         plugins: isProduction ? imageminpProdPlugins : imageminDevPlugins
       }
-    })
+    }),
     // new BrowserSyncPlugin(
     //   {
     //     host: "localhost",
@@ -356,28 +380,29 @@ module.exports = {
     //   },
     //   { reload: false }
     // )
+    new BundleAnalyzerPlugin(analyzerSettings)
   ],
   optimization: {
-    splitChunks: {
-      chunks: "async",
-      minSize: 30000,
-      maxSize: 100000,
-      minChunks: 1,
-      maxAsyncRequests: 3,
-      maxInitialRequests: 3,
-      automaticNameDelimiter: "~",
-      name: true,
-      cacheGroups: {
-        vendors: {
-          test: /[\\/]node_modules[\\/]/,
-          priority: -10
-        },
-        default: {
-          minChunks: 2,
-          priority: -20,
-          reuseExistingChunk: true
-        }
-      }
-    }
+    // splitChunks: {
+    //   chunks: "async",
+    //   minSize: 30000,
+    //   maxSize: 100000,
+    //   minChunks: 1,
+    //   maxAsyncRequests: 3,
+    //   maxInitialRequests: 3,
+    //   automaticNameDelimiter: "~",
+    //   name: true,
+    //   cacheGroups: {
+    //     vendors: {
+    //       test: /[\\/]node_modules[\\/]/,
+    //       priority: -10
+    //     },
+    //     default: {
+    //       minChunks: 2,
+    //       priority: -20,
+    //       reuseExistingChunk: true
+    //     }
+    //   }
+    // }
   }
 };
