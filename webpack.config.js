@@ -57,10 +57,11 @@ if (!fs.existsSync(path.resolve(config.src))) {
 }
 
 const analyzerSettings = {
-  analyzerMode: isProduction ? "static" : "disabled",
+  // analyzerMode: isProduction ? "static" : "disabled",
+  analyzerMode:  "static",
   generateStatsFile: isProduction,
-  reportFilename: "./webpack/stats/index.html",
-  statsFilename: "./webpack/stats/stats.json"
+  reportFilename: "../site/webpack/stats/index.html",
+  statsFilename: "../site/webpack/stats/stats.json"
 };
 
 if (process.env.WEBPACK_BUNDLE_ANALYZER) {
