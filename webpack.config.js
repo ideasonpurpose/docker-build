@@ -58,7 +58,7 @@ if (!fs.existsSync(path.resolve(config.src))) {
 
 const analyzerSettings = {
   // analyzerMode: isProduction ? "static" : "disabled",
-  analyzerMode:  "static",
+  analyzerMode: "static",
   generateStatsFile: isProduction,
   reportFilename: "../site/webpack/stats/index.html",
   statsFilename: "../site/webpack/stats/stats.json"
@@ -261,15 +261,18 @@ module.exports = {
        */
       chokidar
         // TODO: this path is kind of hidden down here
-        .watch([`../site/wp-content/themes/${pkgName}/**/*.php`], {
-          alwaysStat: true,
-          atomic: false,
-          followSymlinks: false,
+        // .watch([`../site/wp-content/themes/${pkgName}/**/*.php`], {
+        .watch([path.resolve(config.src, "../**/*.php")], {
+          // TODO: Remove this stuff after some more testing
+          // alwaysStat: true,
+          // atomic: false,
+          // followSymlinks: false,
+          ignored: ["**/.git/**", "**/vendor/**"],
           ignoreInitial: true,
-          ignorePermissionErrors: true,
-          persistent: true,
-          usePolling: true,
-          interval: 500
+          ignorePermissionErrors: true
+          // persistent: true,
+          // usePolling: true,
+          // interval: 500
         })
         .on("all", () => {
           console.log("Chokidar changed, reloading...");
@@ -362,7 +365,7 @@ module.exports = {
     new ManifestPlugin({ writeToFileEmit: true }),
     new copyPlugin([{ from: "**/*", cache: true }], {
       logLevel: isProduction ? "info" : "warn",
-      ignore: [".DS_Store", "js/**/*", "sass/**/*", "fonts/**/*"]
+      ignore: [".DS_Store", "js/**/*", "sass/**/*", "fonts/**/*", "blocks/**/*"]
     }),
 
     new ImageminPlugin({
