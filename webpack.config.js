@@ -118,7 +118,7 @@ const entry = {
 };
 
 if (fs.existsSync(`${path.resolve(config.src)}/js/editor-blocks.js`)) {
-  entry["admin-editor-blocks"] = "./js/editor-editor-blocks.js";
+  entry["editor-blocks"] = "./js/editor-blocks.js";
 }
 
 module.exports = {
@@ -201,6 +201,7 @@ module.exports = {
   context: path.resolve(config.src),
 
   resolve: {
+    // symlinks: false, // attempted fix for `Cannot assign to read only property 'exports' of object` (module.exports)-- didn't work
     modules: [
       path.resolve("../tools/node_modules"),
       path.resolve("../site/node_modules")
@@ -274,8 +275,10 @@ module.exports = {
           // usePolling: true,
           // interval: 500
         })
-        .on("all", () => {
-          console.log("Chokidar changed, reloading...");
+        .on("all", (event, changedPath) => {
+          const basePath = path.resolve(config.src, "..");
+          const relPath = path.relative(basePath, changedPath);
+          console.log(`Chokidar event: ${event} (${relPath}). Reloading...`);
           server.sockWrite(server.sockets, "content-changed");
         });
     },
@@ -408,5 +411,9 @@ module.exports = {
     //     }
     //   }
     // }
+    splitChunks: {
+      name: "vendor",
+      chunks: "all"
+    }
   }
 };

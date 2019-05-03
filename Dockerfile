@@ -17,10 +17,10 @@ RUN apt-get update -qq \
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
 
 COPY package*.json ./
+RUN npm clean-install
+
 COPY webpack.config.js ./
 COPY zip.js ./
-
-RUN npm clean-install
 
 # run apk del build-deps
 
