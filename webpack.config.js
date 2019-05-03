@@ -261,19 +261,10 @@ module.exports = {
        * Watch PHP files and reload everything on change
        */
       chokidar
-        // TODO: this path is kind of hidden down here
-        // .watch([`../site/wp-content/themes/${pkgName}/**/*.php`], {
         .watch([path.resolve(config.src, "../**/*.php")], {
-          // TODO: Remove this stuff after some more testing
-          // alwaysStat: true,
-          // atomic: false,
-          // followSymlinks: false,
           ignored: ["**/.git/**", "**/vendor/**"],
           ignoreInitial: true,
           ignorePermissionErrors: true
-          // persistent: true,
-          // usePolling: true,
-          // interval: 500
         })
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
