@@ -406,7 +406,7 @@ module.exports = {
 
   mode: isProduction ? "production" : "development",
 
-  devtool: isProduction
+  devtool: !isProduction
     ? "cheap-module-eval-source-map"
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
