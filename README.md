@@ -4,23 +4,79 @@
 
 This repository is the source for Docker AutoBuilds. Get the image on DockerHub: [hub.docker.com/r/ideasonpurpose/docker-build](https://hub.docker.com/r/ideasonpurpose/docker-build)
 
+## Configuration
+
+Each project should define a basic configiuration object in a file named _ideasonpurpose.config.js_. The default configuraiton object looks like this:
+
+```js
+module.exports = {
+  src: "./src",
+  dist: "./dist",
+  entry: ["./js/index.js"],
+  publicPath: "/dist/",
+  proxy: null
+};
+```
+
+### Config object
+
+#### `src`
+
+The filesystem path to the directory where assets source files can be found.
+
+#### `dist`
+
+The filesystem path to the output directory where Webpack will generate files.
+
+#### `entry`
+
+This can be an array of paths, a string path or a pre-configured Webpack entry object. For arrays, named entry points will be extrapolated from each entry's basename. Strings will be treated as single-element arrays. Objects will passthrough unchanged.
+
+#### `publicPath`
+
+This is the public url path to the dist folder. Web browsers will reference our generated assets from this location. These paths are visible in the generated manifest. Paths are joined ina , you probably want to include a trailing slash.
+
+#### `proxy` (optional)
+
+When set, Webpack's devserver will proxy this server, replacing requested assets as appropriate.
+
+### WordPress config
+
+For WordPress sites, the config gile will look something like this:
+
+```js
+const pkg = require("./package.json");
+
+module.exports = {
+  src: `./wp-content/themes/${pkg.name}/src`,
+  dist: `./wp-content/themes/${pkg.name}/dist`,
+  entry: ["./js/main.js", "./js/admin.js", "./js/editor-blocks.js"],
+  publicPath: "/_assets/dist/",
+  proxy: `${pkg.name}.test`
+};
+```
+
 ## Running a build from Docker
 
-Example run:
+### Example runs
 
-**Mac/Linux**
+#### Mac/Linux
 
 ```sh
-$ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v $PWD:/usr/src/site ideasonpurpose/docker-build npm run devserver
+$ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v $PWD:/usr/src/site ideasonpurpose/docker-build npm run build
 ```
 
-**Windows Command Line**
+This can also be run with `npm run build`
+
+#### Windows Command Line
 
 ```cmd
-$ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v %cd%:/usr/src/site ideasonpurpose/docker-build npm run devserver
+$ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v %cd%:/usr/src/site ideasonpurpose/docker-build npm run build
 ```
 
-Note: If Windows throws a "driver failed programming external connectivity on endpoint" error, restart Docker. See [docker/for-win#2722](https://github.com/docker/for-win/issues/2722)
+> Notes: The only difference between the POSIX and Windows commands is the using the Windows' varible `%cd%` instead of `$PWD`.
+>
+> If Windows throws a "driver failed programming external connectivity on endpoint" error, restart Docker. See [docker/for-win#2722](https://github.com/docker/for-win/issues/2722)
 
 ### Commands
 
@@ -51,7 +107,7 @@ Mount the project's web root directory to `/usr/src/site`
 ## Todo
 
 - config file (load `/usr/src/site/_config.yml` from our webpack config)
-- Shrink image, start from node:11-slim or node:11-alpine
+- ~~Shrink image, start from node:11-slim or node:11-alpine~~
 - ~~auto-inject local hostname or IP~~
 - ~~Docker autobuilds~~
 
@@ -62,3 +118,10 @@ Mount the project's web root directory to `/usr/src/site`
 Tooling runs from `/usr/src/tools` inside the Docker image. Site files are expected to be mounted to `/usr/src/site`
 
 Requesting `/webpack/reload` from the devserver will will trigger a full reload for all connected clients.
+
+The config object can include additional sources/entry-points, (todo: name this better) include an array of relative source files like this:
+
+```js
+```
+
+[cosmiconfig]: https://www.npmjs.com/package/cosmiconfig

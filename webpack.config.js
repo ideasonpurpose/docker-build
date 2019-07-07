@@ -1,12 +1,14 @@
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 
 const webpack = require("webpack");
 
+const cosmiconfig = require("cosmiconfig");
+
 const chokidar = require("chokidar");
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const ManifestPlugin = require("webpack-manifest-plugin");
 const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
@@ -28,9 +30,9 @@ const cssnano = require("cssnano");
 
 // TODO: These can go away now that we're in Docker
 //       We still need pkgName, but it should pull from process.env
-const readPkgUp = require("read-pkg-up");
-const { pkg } = readPkgUp.sync();
-const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
+// const readPkgUp = require("read-pkg-up");
+// const { pkg } = readPkgUp.sync();
+// const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
 
 /**
  * Force mode: production when running the analyzer
@@ -39,41 +41,87 @@ if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const config = {
-  src: `../site/wp-content/themes/${pkgName}/src`,
-  dist: `../site/wp-content/themes/${pkgName}/dist`,
-  vm: process.env.VM || pkgName // TODO: Terrible variable name. Maybe devUrl or devDomain or something
+const explorer = cosmiconfig("ideasonpurpose");
+const configFile = explorer.searchSync("../site");
+
+const defaultConfig = {
+  src: "./src",
+  dist: "./dist",
+  entry: ["./js/index.js"],
+  publicPath: "/dist/",
+  proxy: null // TODO this doesn't do much yet, make devServer condtional
 };
 
+const config = { ...defaultConfig, ...configFile.config };
+
+console.log("CONFIG", config);
 /**
- * If `src` doesn't exist, bail out here
+ * Normalize paths relative to our webpack.config.js file
+ *
+ * If the `config.src` directory doesn't exist, bail out here
+ *
+ * Tools live in /usr/src/tools
+ * Site is linked to /src/src/site
  */
-if (!fs.existsSync(path.resolve(config.src))) {
+config.src = path.resolve("../site", config.src);
+config.dist = path.resolve("../site", config.dist);
+
+if (!fs.existsSync(config.src)) {
   throw new Error(
-    `src directory '${
-      config.src
-    }' does not exist. Set a NAME environment variable.`
+    `src directory '${config.src}' does not exist. Set a NAME environment variable.`
   );
 }
 
-const analyzerSettings = {
-  // analyzerMode: isProduction ? "static" : "disabled",
-  analyzerMode: "static",
-  generateStatsFile: isProduction,
-  reportFilename: "../site/webpack/stats/index.html",
-  statsFilename: "../site/webpack/stats/stats.json"
-};
+// const entry = {
+//   app: "./js/index.js"
+//   // admin: "./js/admin.js"    // TODO: re-enable for WordPress
+// };
 
-if (process.env.WEBPACK_BUNDLE_ANALYZER) {
-  // analyzerSettings.analyzerMode = "server";
-  // analyzerSettings.analyzerHost = "0.0.0.0";
-  // analyzerSettings.analyzerPort = 8080;
-  Object.assign(analyzerSettings, {
-    analyzerMode: "server",
-    analyzerHost: "0.0.0.0",
-    analyzerPort: 8080
-  });
-}
+/**
+ * Generate an entry object from config.entry.
+ * Output names will be based on the source file's basename.
+ *
+ * Config.entry should preferrably be an array, but strings or objects
+ * will also work. Strings will be treated as a single-item array. Arrays
+ * be parsed into an object, objects (or whatever) will be passed through.
+ *
+ * A setting like this:
+ *   [ "./js/index.js" ]
+ *
+ * Yields an entry object like this:
+ *  { index: "./js/index.js"}
+ *
+ * A string will be wrapped in an array:
+ *   "./js/main.js"  =>  [ "./js/main.js" ]
+ *
+ * Objects pass stright through
+ *   { app: "./js/main.js" }
+ */
+config.entry = typeof config.entry === "string" ? [config.entry] : config.entry;
+const entry = !Array.isArray(config.entry)
+  ? config.entry
+  : config.entry.reduce((obj, src) => {
+      obj[path.parse(src).name] = src;
+      return obj;
+    }, {});
+
+// const entry = {};
+// if (Array.isArray(config.entry)) {
+//   config.entry.forEach(src => (entry[path.parse(src).name] = src));
+// } else {
+//   Object.assign(entry, config.entry);
+// }
+
+// TODO: This might be too leaky, maybe disable analyzer unless requested
+// const analyzerSettings = {
+//   analyzerMode: "static",
+//   generateStatsFile: isProduction,
+//   reportFilename: `${config.dist}/webpack/stats/index.html`,
+//   statsFilename: `${config.dist}/webpack/stats/stats.json`,
+//   ...(process.env.WEBPACK_BUNDLE_ANALYZER
+//     ? { analyzerMode: "server", analyzerHost: "0.0.0.0", analyzerPort: 8080 }
+//     : {})
+// };
 
 const imageminpProdPlugins = [
   imageminGifsicle({ optimizationLevel: 3 }),
@@ -112,15 +160,6 @@ const imageminDevPlugins = [
   })
 ];
 
-const entry = {
-  app: "./js/index.js",
-  admin: "./js/admin.js"
-};
-
-if (fs.existsSync(`${path.resolve(config.src)}/js/editor-blocks.js`)) {
-  entry["editor-blocks"] = "./js/editor-blocks.js";
-}
-
 module.exports = {
   module: {
     rules: [
@@ -130,13 +169,19 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            plugins: ["syntax-dynamic-import"],
+            plugins: [
+              "@babel/plugin-syntax-dynamic-import",
+              ...(isProduction
+                ? []
+                : ["@babel/plugin-transform-react-jsx-source"])
+            ],
             presets: [
               [
                 "@babel/preset-env",
                 {
                   forceAllTransforms: true,
                   useBuiltIns: "usage",
+                  configPath: config.src,
                   corejs: 3,
                   modules: false,
                   debug: true
@@ -173,6 +218,15 @@ module.exports = {
           }
         ]
       },
+      /**
+       * This image loader is specifically for images which are required or
+       * imported into a webpack processed entry file. Optimization is
+       * handled by the imagemin-webpack plugin. These assets will be renamed
+       * with a chunkhash fragment.
+       *
+       * All images in `config.src` will be optimized and copied by
+       * copy-webpack-plugin.
+       */
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
         use: [
@@ -181,7 +235,7 @@ module.exports = {
             options: {
               fallback: "file-loader",
               limit: 8192,
-              name: "images/[name]-[hash:6].[ext]"
+              name: "images/[name]-[chunkhash:6].[ext]"
             }
           }
         ]
@@ -215,13 +269,17 @@ module.exports = {
   entry,
 
   output: {
-    path: path.resolve(`${config.dist}`),
+    path: path.resolve(config.dist),
     filename: "js/[name]-[hash].js",
-    chunkFilename: "js/[name].bundle.js",
-
-    publicPath: `/wp-content/themes/${pkgName}/dist/`
+    // chunkFilename: "js/[name].bundle.js",
+    chunkFilename: "js/[name].bundle-[chunkhash].js",
+    publicPath: config.publicPath
   },
 
+  // TODO: Add contentBase property to the devServer object.
+  //  https://webpack.js.org/configuration/dev-server/#devservercontentbase
+  // Should fix this path:
+  //  >  ℹ ｢wds｣: Content not from webpack is served from /usr/src/tools
   devServer: {
     index: "", // enable root proxying
     bonjour: true,
@@ -245,9 +303,10 @@ module.exports = {
     // },
 
     before: function(app, server) {
+      // TODO: What is this and does it do anything? Leftover?
       app.all("/inform", () => false);
       /**
-       * This endpoint triggers a full refresh of the dev server
+       * The "/webpack/reload" endpoint will trigger a full devServer refresh
        * See current Browsersync implementation here:
        *
        * https://github.com/ideasonpurpose/wp-theme-init/blob/master/src/ThemeInit.php#L85-L111
@@ -280,7 +339,7 @@ module.exports = {
 
     proxy: {
       "**": {
-        target: `http://${config.vm}`,
+        target: `http://${config.proxy}`,
         secure: false,
         autoRewrite: true,
         selfHandleResponse: true, // necessary to avoid res.end being called automatically
@@ -297,7 +356,7 @@ module.exports = {
 
         onProxyRes: function(proxyRes, req, res) {
           const replaceTarget = str =>
-            str.replace(new RegExp(config.vm, "gi"), req.headers.host);
+            str.replace(new RegExp(config.proxy, "gi"), req.headers.host);
 
           // Update urls in files with these content-types
           const contentTypes = [
@@ -347,14 +406,15 @@ module.exports = {
 
   mode: isProduction ? "production" : "development",
 
-  devtool:
-    process.env.NODE_ENV !== "production"
-      ? "cheap-module-eval-source-map"
-      : false,
+  devtool: isProduction
+    ? "cheap-module-eval-source-map"
+    : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    new CleanWebpackPlugin(),
+    // TODO: cleanStaleWebpackAssets isn't working, dist is full of old
+    //       garbage that's never getting removed
+    new CleanWebpackPlugin({ verbose: true, cleanStaleWebpackAssets: false }),
     new MiniCssExtractPlugin({ filename: "css/[name]-[hash].css" }),
     new ManifestPlugin({ writeToFileEmit: true }),
     new copyPlugin([{ from: "**/*", cache: true }], {
@@ -370,6 +430,7 @@ module.exports = {
         plugins: isProduction ? imageminpProdPlugins : imageminDevPlugins
       }
     }),
+
     // new BrowserSyncPlugin(
     //   {
     //     host: "localhost",
@@ -378,33 +439,48 @@ module.exports = {
     //   },
     //   { reload: false }
     // )
-    new BundleAnalyzerPlugin(analyzerSettings)
+
+
+
+
+
+
+    // TODO: Get BundleAnalyzer working
+    // TODO : Get explore.js running from postanalyze npm hook
+    // TODO: run source-map-explorer
+    // TODO: echo a message with soruce-map-=explorer and webpack0-analyzer urls
+
+
+
+    // ...(process.env.WEBPACK_BUNDLE_ANALYZER
+    //   ? (
+    new BundleAnalyzerPlugin({
+      analyzerMode: "static",
+      generateStatsFile: isProduction,
+      openAnalyzer: false,
+      reportFilename: `${config.dist}/webpack/stats/index.html`,
+      statsFilename: `${config.dist}/webpack/stats/stats.json`
+    })
+    // )
+    //   : false)
   ],
   optimization: {
-    // splitChunks: {
-    //   chunks: "async",
-    //   minSize: 30000,
-    //   maxSize: 100000,
-    //   minChunks: 1,
-    //   maxAsyncRequests: 3,
-    //   maxInitialRequests: 3,
-    //   automaticNameDelimiter: "~",
-    //   name: true,
-    //   cacheGroups: {
-    //     vendors: {
-    //       test: /[\\/]node_modules[\\/]/,
-    //       priority: -10
-    //     },
-    //     default: {
-    //       minChunks: 2,
-    //       priority: -20,
-    //       reuseExistingChunk: true
-    //     }
-    //   }
-    // }
     splitChunks: {
-      name: "vendor",
-      chunks: "all"
+      // chunks: "all"
+      name: !isProduction,
+      cacheGroups: {
+        // default: {
+        //   minChunks: 2,
+        //   // priority: -20,
+        //   reuseExistingChunk: true
+        // },
+        vendors: {
+          name: "vendor",
+          // filename: "[name].bundle-[chunkhash].js",
+          test: /[\\/]node_modules[\\/]/,
+          chunks: "all"
+        }
+      }
     }
   }
 };

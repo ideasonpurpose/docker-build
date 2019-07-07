@@ -73,7 +73,7 @@ spinner.stopAndPersist();
 const start = process.hrtime();
 const globOpts = { cwd: `./wp-content/themes/${pkgName}`, nodir: true };
 
-globby(["**/*", "!src"], globOpts)
+globby(["**/*", "!src", "!**/*.sql"], globOpts)
   .then(fileList =>
     fileList.map(f => {
       const file = {
