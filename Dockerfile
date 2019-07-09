@@ -21,6 +21,7 @@ RUN npm clean-install
 
 COPY webpack.config.js ./
 COPY zip.js ./
+COPY explore.js ./
 
 # run apk del build-deps
 
