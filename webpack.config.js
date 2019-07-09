@@ -28,12 +28,6 @@ const cssnano = require("cssnano");
 //      'socket hang up' ECONNRESET errors on every request
 // const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
-// TODO: These can go away now that we're in Docker
-//       We still need pkgName, but it should pull from process.env
-// const readPkgUp = require("read-pkg-up");
-// const { pkg } = readPkgUp.sync();
-// const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
-
 /**
  * Force mode: production when running the analyzer
  */
@@ -44,6 +38,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const explorer = cosmiconfig("ideasonpurpose");
 const configFile = explorer.searchSync("../site");
 
+// TODO: This should migrate to a separate, imported file
 const defaultConfig = {
   src: "./src",
   dist: "./dist",
@@ -54,7 +49,6 @@ const defaultConfig = {
 
 const config = { ...defaultConfig, ...configFile.config };
 
-console.log("CONFIG", config);
 /**
  * Normalize paths relative to our webpack.config.js file
  *
@@ -71,11 +65,6 @@ if (!fs.existsSync(config.src)) {
     `src directory '${config.src}' does not exist. Set a NAME environment variable.`
   );
 }
-
-// const entry = {
-//   app: "./js/index.js"
-//   // admin: "./js/admin.js"    // TODO: re-enable for WordPress
-// };
 
 /**
  * Generate an entry object from config.entry.
@@ -104,24 +93,6 @@ const entry = !Array.isArray(config.entry)
       obj[path.parse(src).name] = src;
       return obj;
     }, {});
-
-// const entry = {};
-// if (Array.isArray(config.entry)) {
-//   config.entry.forEach(src => (entry[path.parse(src).name] = src));
-// } else {
-//   Object.assign(entry, config.entry);
-// }
-
-// TODO: This might be too leaky, maybe disable analyzer unless requested
-// const analyzerSettings = {
-//   analyzerMode: "static",
-//   generateStatsFile: isProduction,
-//   reportFilename: `${config.dist}/webpack/stats/index.html`,
-//   statsFilename: `${config.dist}/webpack/stats/stats.json`,
-//   ...(process.env.WEBPACK_BUNDLE_ANALYZER
-//     ? { analyzerMode: "server", analyzerHost: "0.0.0.0", analyzerPort: 8080 }
-//     : {})
-// };
 
 const imageminpProdPlugins = [
   imageminGifsicle({ optimizationLevel: 3 }),
@@ -440,17 +411,10 @@ module.exports = {
     //   { reload: false }
     // )
 
-
-
-
-
-
     // TODO: Get BundleAnalyzer working
     // TODO : Get explore.js running from postanalyze npm hook
     // TODO: run source-map-explorer
     // TODO: echo a message with soruce-map-=explorer and webpack0-analyzer urls
-
-
 
     // ...(process.env.WEBPACK_BUNDLE_ANALYZER
     //   ? (
