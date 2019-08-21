@@ -14,12 +14,12 @@ const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const ImageminPlugin = require("imagemin-webpack");
-const imageminGifsicle = require("imagemin-gifsicle");
-const imageminJpegtran = require("imagemin-jpegtran");
-const imageminOptipng = require("imagemin-optipng");
-const imageminPngquant = require("imagemin-pngquant");
-const imageminSvgo = require("imagemin-svgo");
-const imageminMozjpeg = require("imagemin-mozjpeg");
+// const imageminGifsicle = require("imagemin-gifsicle");
+// const imageminJpegtran = require("imagemin-jpegtran");
+// const imageminOptipng = require("imagemin-optipng");
+// const imageminPngquant = require("imagemin-pngquant");
+// const imageminSvgo = require("imagemin-svgo");
+// const imageminMozjpeg = require("imagemin-mozjpeg");
 
 const autoprefixer = require("autoprefixer");
 const cssnano = require("cssnano");
@@ -94,16 +94,54 @@ const entry = !Array.isArray(config.entry)
       return obj;
     }, {});
 
+// const imageminpProdPlugins = [
+//   imageminGifsicle({ optimizationLevel: 3 }),
+//   imageminPngquant({
+//     strip: true,
+//     dithering: 0.3,
+//     quality: [0.5, 0.8],
+//     verbose: true
+//   }),
+//   imageminMozjpeg({ quality: 80, progressive: true }),
+//   imageminSvgo({
+//     floatPrecision: 3, // https://github.com/svg/svgo/issues/171#issuecomment-235605112
+//     plugins: [
+//       // {mergePaths: true},
+//       { cleanupIDs: false },
+//       // { convertTransform: true }, // default?
+//       // { removeTitle: true },
+//       { sortAttrs: true }
+//     ]
+//   })
+// ];
+
+// const imageminDevPlugins = [
+//   imageminGifsicle({ optimizationLevel: 1 }),
+//   imageminOptipng({ optimizationLevel: 0 }),
+//   imageminJpegtran({ progressive: true }),
+//   imageminSvgo({
+//     js2svg: { pretty: true },
+//     floatPrecision: 3,
+//     plugins: [
+//       { cleanupIDs: false },
+//       // { convertTransform: true }, // default
+//       // { removeTitle: true },  //default?
+//       { sortAttrs: true }
+//     ]
+//   })
+// ];
+
+
 const imageminpProdPlugins = [
-  imageminGifsicle({ optimizationLevel: 3 }),
-  imageminPngquant({
+  ['gifsicle', { optimizationLevel: 3 }],
+  ['pngquant', {
     strip: true,
     dithering: 0.3,
     quality: [0.5, 0.8],
     verbose: true
-  }),
-  imageminMozjpeg({ quality: 80, progressive: true }),
-  imageminSvgo({
+  }],
+  ['mozjpeg',{ quality: 80, progressive: true } ],
+  ['svgo', {
     floatPrecision: 3, // https://github.com/svg/svgo/issues/171#issuecomment-235605112
     plugins: [
       // {mergePaths: true},
@@ -112,14 +150,14 @@ const imageminpProdPlugins = [
       // { removeTitle: true },
       { sortAttrs: true }
     ]
-  })
+  }]
 ];
 
 const imageminDevPlugins = [
-  imageminGifsicle({ optimizationLevel: 1 }),
-  imageminOptipng({ optimizationLevel: 0 }),
-  imageminJpegtran({ progressive: true }),
-  imageminSvgo({
+  ['gifsicle', { optimizationLevel: 1 }],
+  ['optipng',{ optimizationLevel: 0 }],
+  ['jpegtran', {progressive: true}],
+  ['svgo', {
     js2svg: { pretty: true },
     floatPrecision: 3,
     plugins: [
@@ -128,8 +166,10 @@ const imageminDevPlugins = [
       // { removeTitle: true },  //default?
       { sortAttrs: true }
     ]
-  })
+  }]
 ];
+
+
 
 module.exports = {
   module: {
@@ -205,8 +245,8 @@ module.exports = {
             loader: "url-loader",
             options: {
               fallback: "file-loader",
-              limit: 8192,
-              name: "images/[name]-[chunkhash:6].[ext]"
+              limit: 8192,// TODO: Try this again, did it ever work?
+              // name: "images/[name]-[chunkhash:6].[ext]"
             }
           }
         ]
