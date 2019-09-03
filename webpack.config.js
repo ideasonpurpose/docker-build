@@ -49,6 +49,14 @@ const defaultConfig = {
 
 const config = { ...defaultConfig, ...configFile.config };
 
+try {
+  config.proxyUrl = new URL(config.proxy);
+  console.log(config.proxyUrl);
+} catch (err) {
+  console.log("proxy couldn't be parsed", err);
+  config.proxyUrl = {};
+}
+
 /**
  * Normalize paths relative to our webpack.config.js file
  *
@@ -62,10 +70,12 @@ config.dist = path.resolve("../site", config.dist);
 
 if (!fs.existsSync(config.src)) {
   throw new Error(
-    `src directory '${config.src}' does not exist. Set a NAME environment variable.`
+    `src directory '${config.src}' ` +
+      "does not exist. Set a NAME environment variable."
   );
 }
 
+console.log("Initial Memory Usage:", process.memoryUsage());
 /**
  * Generate an entry object from config.entry.
  * Output names will be based on the source file's basename.
@@ -94,82 +104,51 @@ const entry = !Array.isArray(config.entry)
       return obj;
     }, {});
 
-// const imageminpProdPlugins = [
-//   imageminGifsicle({ optimizationLevel: 3 }),
-//   imageminPngquant({
-//     strip: true,
-//     dithering: 0.3,
-//     quality: [0.5, 0.8],
-//     verbose: true
-//   }),
-//   imageminMozjpeg({ quality: 80, progressive: true }),
-//   imageminSvgo({
-//     floatPrecision: 3, // https://github.com/svg/svgo/issues/171#issuecomment-235605112
-//     plugins: [
-//       // {mergePaths: true},
-//       { cleanupIDs: false },
-//       // { convertTransform: true }, // default?
-//       // { removeTitle: true },
-//       { sortAttrs: true }
-//     ]
-//   })
-// ];
-
-// const imageminDevPlugins = [
-//   imageminGifsicle({ optimizationLevel: 1 }),
-//   imageminOptipng({ optimizationLevel: 0 }),
-//   imageminJpegtran({ progressive: true }),
-//   imageminSvgo({
-//     js2svg: { pretty: true },
-//     floatPrecision: 3,
-//     plugins: [
-//       { cleanupIDs: false },
-//       // { convertTransform: true }, // default
-//       // { removeTitle: true },  //default?
-//       { sortAttrs: true }
-//     ]
-//   })
-// ];
-
-
 const imageminpProdPlugins = [
-  ['gifsicle', { optimizationLevel: 3 }],
-  ['pngquant', {
-    strip: true,
-    dithering: 0.3,
-    quality: [0.5, 0.8],
-    verbose: true
-  }],
-  ['mozjpeg',{ quality: 80, progressive: true } ],
-  ['svgo', {
-    floatPrecision: 3, // https://github.com/svg/svgo/issues/171#issuecomment-235605112
-    plugins: [
-      // {mergePaths: true},
-      { cleanupIDs: false },
-      // { convertTransform: true }, // default?
-      // { removeTitle: true },
-      { sortAttrs: true }
-    ]
-  }]
+  ["gifsicle", { optimizationLevel: 3 }],
+  [
+    "pngquant",
+    {
+      strip: true,
+      dithering: 0.3,
+      quality: [0.5, 0.8],
+      verbose: true
+    }
+  ],
+  ["mozjpeg", { quality: 80, progressive: true }],
+  [
+    "svgo",
+    {
+      floatPrecision: 3, // https://github.com/svg/svgo/issues/171#issuecomment-235605112
+      plugins: [
+        // {mergePaths: true},
+        { cleanupIDs: false },
+        // { convertTransform: true }, // default?
+        // { removeTitle: true },
+        { sortAttrs: true }
+      ]
+    }
+  ]
 ];
 
 const imageminDevPlugins = [
-  ['gifsicle', { optimizationLevel: 1 }],
-  ['optipng',{ optimizationLevel: 0 }],
-  ['jpegtran', {progressive: true}],
-  ['svgo', {
-    js2svg: { pretty: true },
-    floatPrecision: 3,
-    plugins: [
-      { cleanupIDs: false },
-      // { convertTransform: true }, // default
-      // { removeTitle: true },  //default?
-      { sortAttrs: true }
-    ]
-  }]
+  ["gifsicle", { optimizationLevel: 1 }],
+  ["optipng", { optimizationLevel: 0 }],
+  ["jpegtran", { progressive: true }],
+  [
+    "svgo",
+    {
+      js2svg: { pretty: true },
+      floatPrecision: 3,
+      plugins: [
+        { cleanupIDs: false },
+        // { convertTransform: true }, // default
+        // { removeTitle: true },  //default?
+        { sortAttrs: true }
+      ]
+    }
+  ]
 ];
-
-
 
 module.exports = {
   module: {
@@ -245,7 +224,7 @@ module.exports = {
             loader: "url-loader",
             options: {
               fallback: "file-loader",
-              limit: 8192,// TODO: Try this again, did it ever work?
+              limit: 8192 // TODO: Try this again, did it ever work?
               // name: "images/[name]-[chunkhash:6].[ext]"
             }
           }
@@ -294,10 +273,10 @@ module.exports = {
   devServer: {
     index: "", // enable root proxying
     bonjour: true,
-    host: "0.0.0.0",
+    host: "0.0.0.0", // This might not be necessary since Docker bridges the port?
     disableHostCheck: true,
     hot: true,
-    overlay: true,
+    overlay: { warnings: true, errors: true },
     writeToDisk: true,
     stats: {
       all: false,
@@ -329,6 +308,7 @@ module.exports = {
 
       /**
        * Watch PHP files and reload everything on change
+       * TODO: maybe this could move outside the devserver? Would it still be called?`
        */
       chokidar
         .watch([path.resolve(config.src, "../**/*.php")], {
@@ -350,7 +330,8 @@ module.exports = {
 
     proxy: {
       "**": {
-        target: `http://${config.proxy}`,
+        // target: `http://${config.proxy}`,
+        target: config.proxyUrl.origin,
         secure: false,
         autoRewrite: true,
         selfHandleResponse: true, // necessary to avoid res.end being called automatically
@@ -366,8 +347,15 @@ module.exports = {
         },
 
         onProxyRes: function(proxyRes, req, res) {
+          // TODO: WHY OH WHY is this replacing the hostname and not the protocol too?
+          //      Seems like a disaster waiting to happen.
+          //      Maybe this should be several replacements? They're fast enough
+          // TODO: Log the fuck out of this.
           const replaceTarget = str =>
-            str.replace(new RegExp(config.proxy, "gi"), req.headers.host);
+            str.replace(
+              new RegExp(config.proxyUrl.host, "gi"),
+              req.headers.host
+            );
 
           // Update urls in files with these content-types
           const contentTypes = [
@@ -378,14 +366,21 @@ module.exports = {
             "text/plain"
           ];
 
-          let originalBody = Buffer.from([]);
+          let originalBody = []; //Buffer.from([]);
 
-          proxyRes.on(
-            "data",
-            data => (originalBody = Buffer.concat([originalBody, data]))
-          );
+          proxyRes.on("data", data => {
+            console.log("got data", data.length);
+            console.log("memoryUsage:", process.memoryUsage());
+
+            // originalBody = Buffer.concat([originalBody, data]);
+            originalBody.push(data);
+          });
 
           proxyRes.on("end", () => {
+            console.log("proxy ending. chunks:", originalBody.length);
+
+            console.log("memoryUsage:", process.memoryUsage());
+
             res.statusCode = proxyRes.statusCode;
             if (proxyRes.statusMessage) {
               res.statusMessage = proxyRes.statusMessage;
@@ -402,11 +397,17 @@ module.exports = {
             });
 
             const type = (proxyRes.headers["content-type"] || "").split(";")[0];
-            let newBody = originalBody;
+            // let newBody = originalBody;
+            let newBody;
+            originalBody = Buffer.concat(originalBody);
 
             if (contentTypes.includes(type)) {
+              console.log(`Content-type: '${type}'. Doing replacement.`);
               newBody = replaceTarget(originalBody.toString("utf8"));
               res.setHeader("Content-Length", Buffer.byteLength(newBody));
+            } else {
+              console.log(`Content-type: '${type}'. Nothing to replace.`);
+              newBody = originalBody;
             }
             res.end(newBody);
           });
@@ -452,7 +453,7 @@ module.exports = {
     // )
 
     // TODO: Get BundleAnalyzer working
-    // TODO : Get explore.js running from postanalyze npm hook
+    // TODO: Get explore.js running from postanalyze npm hook
     // TODO: run source-map-explorer
     // TODO: echo a message with soruce-map-=explorer and webpack0-analyzer urls
 
