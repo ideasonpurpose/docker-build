@@ -75,7 +75,7 @@ if (!fs.existsSync(config.src)) {
   );
 }
 
-console.log("Initial Memory Usage:", process.memoryUsage());
+// console.log("Initial Memory Usage:", process.memoryUsage());
 /**
  * Generate an entry object from config.entry.
  * Output names will be based on the source file's basename.
@@ -319,7 +319,7 @@ module.exports = {
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
           const relPath = path.relative(basePath, changedPath);
-          console.log(`Chokidar event: ${event} (${relPath}). Reloading...`);
+          // console.log(`Chokidar event: ${event} (${relPath}). Reloading...`);
           server.sockWrite(server.sockets, "content-changed");
         });
     },
@@ -369,17 +369,17 @@ module.exports = {
           let originalBody = []; //Buffer.from([]);
 
           proxyRes.on("data", data => {
-            console.log("got data", data.length);
-            console.log("memoryUsage:", process.memoryUsage());
+            // console.log("got data", data.length);
+            // console.log("memoryUsage:", process.memoryUsage());
 
             // originalBody = Buffer.concat([originalBody, data]);
             originalBody.push(data);
           });
 
           proxyRes.on("end", () => {
-            console.log("proxy ending. chunks:", originalBody.length);
+            // console.log("proxy ending. chunks:", originalBody.length);
 
-            console.log("memoryUsage:", process.memoryUsage());
+            // console.log("memoryUsage:", process.memoryUsage());
 
             res.statusCode = proxyRes.statusCode;
             if (proxyRes.statusMessage) {
