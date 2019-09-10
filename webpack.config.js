@@ -1,9 +1,11 @@
 const fs = require("fs-extra");
-const path = require("path");
+const path = require("path").posix;
 
 const webpack = require("webpack");
 
 const cosmiconfig = require("cosmiconfig");
+
+const chalk = require('chalk');
 
 const chokidar = require("chokidar");
 
@@ -159,6 +161,7 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
+            sourceType: "unambiguous",
             plugins: [
               "@babel/plugin-syntax-dynamic-import",
               ...(isProduction
@@ -272,7 +275,7 @@ module.exports = {
   //  >  ℹ ｢wds｣: Content not from webpack is served from /usr/src/tools
   devServer: {
     index: "", // enable root proxying
-    bonjour: true,
+    bonjour: true,  // TODO: Isn't this useless inside a container?
     host: "0.0.0.0", // This might not be necessary since Docker bridges the port?
     disableHostCheck: true,
     hot: true,
@@ -402,11 +405,12 @@ module.exports = {
             originalBody = Buffer.concat(originalBody);
 
             if (contentTypes.includes(type)) {
-              console.log(`Content-type: '${type}'. Doing replacement.`);
+              // console.log(req.path, chalk.green(path.basename(req.path)));
+              console.log(`${chalk.green(req.path)} (${chalk.yellow(type)}) - Doing replacement`);
               newBody = replaceTarget(originalBody.toString("utf8"));
               res.setHeader("Content-Length", Buffer.byteLength(newBody));
             } else {
-              console.log(`Content-type: '${type}'. Nothing to replace.`);
+              // console.log(`Content-type: '${type}'. Nothing to replace.`);
               newBody = originalBody;
             }
             res.end(newBody);
