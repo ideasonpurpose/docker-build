@@ -1,12 +1,12 @@
 # Docker Build Tools
 
-[![dockeri.co](http://dockeri.co/image/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)
+[![dockeri.co](https://dockeri.co/image/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)
 
 This repository is the source for Docker AutoBuilds. Get the image on DockerHub: [hub.docker.com/r/ideasonpurpose/docker-build](https://hub.docker.com/r/ideasonpurpose/docker-build)
 
 ## Configuration
 
-Each project should define a basic configiuration object in a file named _ideasonpurpose.config.js_. The default configuraiton object looks like this:
+Each project should define a basic configuration object in a file named _ideasonpurpose.config.js_. The default configuration object looks like this:
 
 ```js
 module.exports = {
@@ -34,15 +34,17 @@ This can be an array of paths, a string path or a pre-configured Webpack entry o
 
 #### `publicPath`
 
-This is the public url path to the dist folder. Web browsers will reference our generated assets from this location. These paths are visible in the generated manifest. Paths are joined ina , you probably want to include a trailing slash.
+This is the public url path to the dist folder. Web browsers will reference our generated assets from this location. These paths are visible in the generated manifest. Paths are joined naively, you'll probably want to include a trailing slash.
 
 #### `proxy` (optional)
 
 When set, Webpack's devserver will proxy this server, replacing requested assets as appropriate.
 
+<!-- TODO: Defaults? Options? -->
+
 ### WordPress config
 
-For WordPress sites, the config gile will look something like this:
+For WordPress sites, the config file will look something like this:
 
 ```js
 const pkg = require("./package.json");
