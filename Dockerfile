@@ -1,4 +1,4 @@
-FROM node:11-slim
+FROM node:12-slim
 #FROM node:11-alpine
 
 # enable color in the terminal
@@ -10,7 +10,9 @@ RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
       build-essential \
       libgl1-mesa-glx \
+      libxi6 \
       jq \
+      git \
     && rm -rf /var/lib/apt/lists/*
 
 # for node:11-alpine
@@ -22,6 +24,7 @@ RUN npm clean-install
 COPY webpack.config.js ./
 COPY zip.js ./
 COPY explore.js ./
+COPY browsersync.js ./
 
 # run apk del build-deps
 
