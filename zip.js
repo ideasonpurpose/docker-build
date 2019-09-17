@@ -33,6 +33,8 @@ const zipFile = `builds/${versionDir}.zip`;
 let inBytes = 0;
 let fileCount = 0;
 
+// TODO: Handle rewrites for the icon manifests, see NJHI console warnings
+
 const prettierHrtime = hrtime => {
   let timeString;
   const seconds = hrtime[1] > 5e6 ? " seconds" : " second";

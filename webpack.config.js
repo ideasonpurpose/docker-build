@@ -188,6 +188,7 @@ module.exports = {
       {
         test: /\.(scss|css)$/,
         use: [
+          // TODO: enable watching and extracting css for an alternative to WebPack CSS loading
           isProduction ? MiniCssExtractPlugin.loader : "style-loader",
           {
             loader: "css-loader",
@@ -406,7 +407,7 @@ module.exports = {
 
             if (contentTypes.includes(type)) {
               // console.log(req.path, chalk.green(path.basename(req.path)));
-              console.log(`${chalk.green(req.path)} (${chalk.yellow(type)}) - Doing replacement`);
+              // console.log(`${chalk.green(req.path)} (${chalk.yellow(type)}) - Doing replacement`);
               newBody = replaceTarget(originalBody.toString("utf8"));
               res.setHeader("Content-Length", Buffer.byteLength(newBody));
             } else {
