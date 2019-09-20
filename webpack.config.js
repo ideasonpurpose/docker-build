@@ -1,3 +1,6 @@
+// TODO: Try out HTML-wbpack-plugin with dual outputs (head and footer)
+// TODO: Recognize project types and adjust output? WordPress? Jekyll?
+
 const fs = require("fs-extra");
 const path = require("path").posix;
 
@@ -351,6 +354,8 @@ module.exports = {
         },
 
         onProxyRes: function(proxyRes, req, res) {
+
+          // console.log('config.proxyUrl.origin', config.proxyUrl.origin);
           // TODO: WHY OH WHY is this replacing the hostname and not the protocol too?
           //      Seems like a disaster waiting to happen.
           //      Maybe this should be several replacements? They're fast enough
@@ -365,6 +370,7 @@ module.exports = {
           const contentTypes = [
             "application/javascript",
             "application/json",
+            "multipart/form-data",
             "text/css",
             "text/html",
             "text/plain"
@@ -408,10 +414,11 @@ module.exports = {
             if (contentTypes.includes(type)) {
               // console.log(req.path, chalk.green(path.basename(req.path)));
               // console.log(`${chalk.green(req.path)} (${chalk.yellow(type)}) - Doing replacement`);
+
               newBody = replaceTarget(originalBody.toString("utf8"));
               res.setHeader("Content-Length", Buffer.byteLength(newBody));
             } else {
-              // console.log(`Content-type: '${type}'. Nothing to replace.`);
+              console.log(`Content-type: '${type}'. Nothing to replace.`);
               newBody = originalBody;
             }
             res.end(newBody);
