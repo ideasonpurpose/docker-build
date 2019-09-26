@@ -25,6 +25,7 @@ COPY webpack.config.js ./
 COPY zip.js ./
 COPY explore.js ./
 COPY browsersync.js ./
+COPY lib ./lib
 
 # run apk del build-deps
 

@@ -8,7 +8,7 @@ const webpack = require("webpack");
 
 const cosmiconfig = require("cosmiconfig");
 
-const chalk = require('chalk');
+const chalk = require("chalk");
 
 const chokidar = require("chokidar");
 
@@ -17,6 +17,8 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const ManifestPlugin = require("webpack-manifest-plugin");
 const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+
+const DependencyManifestPlugin = require("./lib/DependencyManifestPlugin.js");
 
 const ImageminPlugin = require("imagemin-webpack");
 // const imageminGifsicle = require("imagemin-gifsicle");
@@ -39,6 +41,13 @@ const cssnano = require("cssnano");
 if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
 
 const isProduction = process.env.NODE_ENV === "production";
+
+// /**
+//  * Use `writeFiles` to output everything to disk for non-devServer previews without building for production
+//  */
+// const writeFiles = !!process.env.WRITEFILES;
+
+// console.log("WRITEFILES: ", process.env.WRITEFILES);
 
 const explorer = cosmiconfig("ideasonpurpose");
 const configFile = explorer.searchSync("../site");
@@ -100,12 +109,17 @@ if (!fs.existsSync(config.src)) {
  *
  * Objects pass stright through
  *   { app: "./js/main.js" }
+ *
+ * Overlapping basenames will be joined into a single entrypoint
+ *   ["./index.js", "./app.js", "./index.scss"]  =>  { app: ["./app.js"], index: ["./index.js", "./index.scss"]}
  */
 config.entry = typeof config.entry === "string" ? [config.entry] : config.entry;
 const entry = !Array.isArray(config.entry)
   ? config.entry
   : config.entry.reduce((obj, src) => {
-      obj[path.parse(src).name] = src;
+      obj[path.parse(src).name] = []
+        .concat(obj[path.parse(src).name], src)
+        .filter(i => i);
       return obj;
     }, {});
 
@@ -155,6 +169,48 @@ const imageminDevPlugins = [
   ]
 ];
 
+class BrowsersyncPlugin {
+  constructor(opts1, opts2) {
+    console.log(opts1, opts2);
+    this.isWatch = false;
+  }
+
+  apply(compiler) {
+    compiler.hooks.watchRun.tap(
+      "browsersyncPlugin",
+      () => (this.isWatch = true)
+    );
+
+    console.log(
+      chalk.magenta(">>>>>>>>>>> in browserSyncPlugin Class, apply method")
+      // compiler
+    );
+    compiler.hooks.emit.tapAsync(
+      "browsersyncPlugin",
+      (compilation, callback) => {
+        console.log(
+          chalk.magenta(">>>>>>>>>>> in compiler.hooks.emit"),
+          Object.keys(compilation.assets)
+          //  compilation.assets
+        );
+        Object.keys(compilation.assets)
+          .filter(key => compilation.assets[key].emitted)
+          .forEach(
+            key => {
+              const { _cachedSize, existsAt, emitted } = compilation.assets[
+                key
+              ];
+              console.log(key, { _cachedSize, existsAt, emitted });
+              // console.log(Object.keys(compilation.assets[key]));
+            }
+            //   console.log(Object.keys(a))
+          );
+        callback();
+      }
+    );
+  }
+}
+
 module.exports = {
   module: {
     rules: [
@@ -180,7 +236,7 @@ module.exports = {
                   configPath: config.src,
                   corejs: 3,
                   modules: false,
-                  debug: true
+                  debug: false
                 }
               ],
               "@babel/preset-react"
@@ -192,7 +248,13 @@ module.exports = {
         test: /\.(scss|css)$/,
         use: [
           // TODO: enable watching and extracting css for an alternative to WebPack CSS loading
-          isProduction ? MiniCssExtractPlugin.loader : "style-loader",
+          // isProduction || writeFiles
+          //   ? MiniCssExtractPlugin.loader
+          //   : "style-loader",
+          {
+            loader: MiniCssExtractPlugin.loader,
+            options: { hmr: !isProduction }
+          },
           {
             loader: "css-loader",
             options: { sourceMap: true }
@@ -267,9 +329,10 @@ module.exports = {
 
   output: {
     path: path.resolve(config.dist),
-    filename: "js/[name]-[hash].js",
+    // TODO: All primary output filenames SHOULD NOT include hashes in development
+    filename: isProduction ? "js/[name]-[hash].js" : "js/[name].js",
     // chunkFilename: "js/[name].bundle.js",
-    chunkFilename: "js/[name].bundle-[chunkhash].js",
+    chunkFilename: "js/[id]-[chunkhash:6].js",
     publicPath: config.publicPath
   },
 
@@ -279,7 +342,7 @@ module.exports = {
   //  >  ℹ ｢wds｣: Content not from webpack is served from /usr/src/tools
   devServer: {
     index: "", // enable root proxying
-    bonjour: true,  // TODO: Isn't this useless inside a container?
+    bonjour: true, // TODO: Isn't this useless inside a container?
     host: "0.0.0.0", // This might not be necessary since Docker bridges the port?
     disableHostCheck: true,
     hot: true,
@@ -288,8 +351,9 @@ module.exports = {
     stats: {
       all: false,
       assets: true,
-      chunks: true,
+      chunks: false,
       colors: true,
+      depth: false,
       errorDetails: true,
       errors: true,
       timings: true,
@@ -354,7 +418,6 @@ module.exports = {
         },
 
         onProxyRes: function(proxyRes, req, res) {
-
           // console.log('config.proxyUrl.origin', config.proxyUrl.origin);
           // TODO: WHY OH WHY is this replacing the hostname and not the protocol too?
           //      Seems like a disaster waiting to happen.
@@ -418,7 +481,7 @@ module.exports = {
               newBody = replaceTarget(originalBody.toString("utf8"));
               res.setHeader("Content-Length", Buffer.byteLength(newBody));
             } else {
-              console.log(`Content-type: '${type}'. Nothing to replace.`);
+              // console.log(`Content-type: '${type}'. Nothing to replace.`);
               newBody = originalBody;
             }
             res.end(newBody);
@@ -435,14 +498,16 @@ module.exports = {
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
+    // new webpack.HotModuleReplacementPlugin(),
     // TODO: cleanStaleWebpackAssets isn't working, dist is full of old
     //       garbage that's never getting removed
-    new CleanWebpackPlugin({ verbose: true, cleanStaleWebpackAssets: false }),
-    new MiniCssExtractPlugin({ filename: "css/[name]-[hash].css" }),
+    new CleanWebpackPlugin({ verbose: false, cleanStaleWebpackAssets: false }),
+    new MiniCssExtractPlugin({
+      filename: isProduction ? "css/[name]-[hash].css" : "css/[name].css"
+    }),
     new ManifestPlugin({ writeToFileEmit: true }),
     new copyPlugin([{ from: "**/*", cache: true }], {
-      logLevel: isProduction ? "info" : "warn",
+      logLevel: isProduction ? "warn" : "error",
       ignore: [".DS_Store", "js/**/*", "sass/**/*", "fonts/**/*", "blocks/**/*"]
     }),
 
@@ -455,6 +520,7 @@ module.exports = {
       }
     }),
 
+    new DependencyManifestPlugin({ writeManifestFile: true }),
     // new BrowserSyncPlugin(
     //   {
     //     host: "localhost",
@@ -478,13 +544,14 @@ module.exports = {
       reportFilename: `${config.dist}/webpack/stats/index.html`,
       statsFilename: `${config.dist}/webpack/stats/stats.json`
     })
+    // new BrowsersyncPlugin()
     // )
     //   : false)
   ],
   optimization: {
     splitChunks: {
       // chunks: "all"
-      name: !isProduction,
+      // name: !isProduction,
       cacheGroups: {
         // default: {
         //   minChunks: 2,
@@ -492,12 +559,16 @@ module.exports = {
         //   reuseExistingChunk: true
         // },
         vendors: {
-          name: "vendor",
+          // name: "vendor",
           // filename: "[name].bundle-[chunkhash].js",
+          priority: -10,
           test: /[\\/]node_modules[\\/]/,
-          chunks: "all"
+          reuseExistingChunk: true
         }
-      }
+      },
+      chunks: "all",
+      // minChunks: 3,
+      minSize: 30000
     }
   }
 };
