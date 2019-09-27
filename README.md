@@ -126,4 +126,26 @@ The config object can include additional sources/entry-points, (todo: name this 
 ```js
 ```
 
+### Code Splitting and deferred loading
+
+Code splitting is automatic, required libraries will be de-duped and loaded from a shared module. These are specified in the dependency-manifest file.
+
+Deferred dynamic imports also work. To use these, follow the example in the [Webpack API docs](https://webpack.js.org/api/module-methods/#import-1):
+
+```js
+if (some.condition) {
+  import("./other-file.js").then(module => {
+    // access any exports from module here
+  });
+}
+```
+
+### Local Development
+
+To iterate locally, build the image using the same name as the Docker Hub remote. Docker will use the local copy.
+
+```sh
+$ docker build -t ideasonpurpose/docker-build .
+```
+
 [cosmiconfig]: https://www.npmjs.com/package/cosmiconfig
