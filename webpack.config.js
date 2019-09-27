@@ -65,7 +65,7 @@ const config = { ...defaultConfig, ...configFile.config };
 
 try {
   config.proxyUrl = new URL(config.proxy);
-  console.log(config.proxyUrl);
+  // console.log(config.proxyUrl);
 } catch (err) {
   console.log("proxy couldn't be parsed", err);
   config.proxyUrl = {};
@@ -253,7 +253,8 @@ module.exports = {
           //   : "style-loader",
           {
             loader: MiniCssExtractPlugin.loader,
-            options: { hmr: !isProduction }
+            // options: { hmr: !isProduction }
+            options: { hmr: true }
           },
           {
             loader: "css-loader",
@@ -498,7 +499,8 @@ module.exports = {
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
   plugins: [
-    // new webpack.HotModuleReplacementPlugin(),
+    // TODO: Remove this for production?
+    new webpack.HotModuleReplacementPlugin(),
     // TODO: cleanStaleWebpackAssets isn't working, dist is full of old
     //       garbage that's never getting removed
     new CleanWebpackPlugin({ verbose: false, cleanStaleWebpackAssets: false }),
@@ -550,24 +552,15 @@ module.exports = {
   ],
   optimization: {
     splitChunks: {
-      // chunks: "all"
+      chunks: "all",
       // name: !isProduction,
       cacheGroups: {
-        // default: {
-        //   minChunks: 2,
-        //   // priority: -20,
-        //   reuseExistingChunk: true
-        // },
         vendors: {
-          // name: "vendor",
-          // filename: "[name].bundle-[chunkhash].js",
           priority: -10,
           test: /[\\/]node_modules[\\/]/,
           reuseExistingChunk: true
         }
       },
-      chunks: "all",
-      // minChunks: 3,
       minSize: 30000
     }
   }
