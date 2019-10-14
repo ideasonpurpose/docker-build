@@ -1,7 +1,11 @@
 const fs = require("fs-extra");
-const path = require("path");
+const path = require("path").posix;
+
+const cosmiconfig = require("cosmiconfig");
 
 const chalk = require("chalk");
+const gray = chalk.gray;
+
 const ora = require("ora");
 const filesize = require("filesize");
 
@@ -13,22 +17,27 @@ const globby = require("globby");
 
 const archiver = require("archiver");
 
-// TODO: These can go away now that we're in Docker
-//       We still need pkgName, but it should pull from process.env
 const readPkgUp = require("read-pkg-up");
 
-//TODO: Change this back to '../site'
-process.chdir(path.resolve("../site")); // TODO: clunky. can this be more portable and less hard-coded:?
-const { pkg } = readPkgUp.sync();
-const pkgName = process.env.NAME || process.env.npm_package_name || pkg.name;
+const siteDir = path.resolve(__dirname, "../site");
 
-const archive = archiver("zip");
+const explorer = cosmiconfig("ideasonpurpose");
+const configFile = explorer.searchSync(siteDir);
+
+const defaultConfig = require("./default.config.js");
+const config = { ...defaultConfig, ...configFile.config };
+
+const { pkg } = readPkgUp.sync({ cwd: siteDir });
+
+const pkgName = process.env.NAME || pkg.name;
+
+const archive = archiver("zip", { zlib: { level: 9 } });
 
 const versionDir =
   pkg && pkgName && pkg.version
     ? `${pkgName}-${pkg.version}`.replace(/[ .]/g, "_")
     : "archive";
-const zipFile = `builds/${versionDir}.zip`;
+const zipFile = path.resolve(siteDir, `builds/${versionDir}-webpack.zip`); // TODO: remove '-webpack'
 
 let inBytes = 0;
 let fileCount = 0;
@@ -50,6 +59,10 @@ const prettierHrtime = hrtime => {
   return timeString;
 };
 
+console.log(chalk.bold("Bundling Project for Deployment"));
+const spinner = new ora({ text: "Collecting files..." });
+// spinner.start("Compressing...");
+
 fs.ensureFileSync(zipFile);
 const output = fs.createWriteStream(zipFile);
 
@@ -57,23 +70,32 @@ output.on("finish", () => {
   const outBytes = archive.pointer();
   const end = process.hrtime(start);
   const duration = prettierHrtime(end);
-  const result =
-    `Created ${chalk.bold(path.basename(zipFile))} in ${duration}.` +
+
+  spinner.succeed(
+    `Found ${fileCount} files ` +
+      chalk.gray(`(Uncompressed: ${filesize(inBytes)})`)
+  );
+  spinner.start("Compressing...");
+  spinner.succeed("Compressing... Done!");
+  spinner.succeed(
+    `${chalk.bold(path.basename(zipFile))} created in ${duration}.`,
     chalk.gray(
       `(${filesize(outBytes)} archive.`,
       `Saved ${filesize(inBytes - outBytes)}`,
       `- ${((outBytes / inBytes) * 100).toFixed(2)}%)`
-    );
-  spinner.succeed();
-  spinner.stopAndPersist({ text: result });
+    )
+  );
 });
 
 archive.pipe(output);
 
-const spinner = new ora({ text: "Collecting files..." });
-spinner.stopAndPersist();
+// TODO: WordPress specific, up one from config.src
+const globOpts = {
+  cwd: path.resolve(siteDir, `wp-content/themes/${pkgName}`),
+  nodir: false
+};
+
 const start = process.hrtime();
-const globOpts = { cwd: `./wp-content/themes/${pkgName}`, nodir: true };
 
 globby(["**/*", "!src", "!**/*.sql"], globOpts)
   .then(fileList =>
@@ -87,10 +109,13 @@ globby(["**/*", "!src", "!**/*.sql"], globOpts)
       /**
        * Replace the dev folder name with the versioned folder name in hard-coded
        * include paths. This might only apply to composer's generated autoload
-       * files, but might as well check everything.
+       * files, but it's very fast so might as well check everything.
+       *
+       * TODO: WordPress specific
        */
       if (isTextPath(f)) {
         const devPath = new RegExp(`wp-content/themes/${pkgName}/`, "gi");
+
         file.contents = file.contents.pipe(
           replaceStream(devPath, `wp-content/themes/${versionDir}/`)
         );
@@ -100,13 +125,13 @@ globby(["**/*", "!src", "!**/*.sql"], globOpts)
         var stop = new Date().getTime();
 
         // artificial slowdown 😏
-        while (new Date().getTime() < stop + 5) {}
+        while (new Date().getTime() < stop + 2) {}
 
-        spinner.indent = 2;
         inBytes += chunk.length;
         spinner.start(
-          `${fileCount} files ` +
-            chalk.gray(`(Uncompressed: ${filesize(inBytes)})`)
+          `Found ${fileCount} files`,
+          chalk.gray(`(Uncompressed: ${filesize(inBytes)})`),
+          chalk.yellow("\n  " + file.path)
         );
       });
 
