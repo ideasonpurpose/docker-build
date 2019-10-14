@@ -12,6 +12,7 @@ const chalk = require("chalk");
 
 const chokidar = require("chokidar");
 
+const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const ManifestPlugin = require("webpack-manifest-plugin");
@@ -49,17 +50,20 @@ const isProduction = process.env.NODE_ENV === "production";
 
 // console.log("WRITEFILES: ", process.env.WRITEFILES);
 
+const siteDir = path.resolve(__dirname, '../site');
+
 const explorer = cosmiconfig("ideasonpurpose");
-const configFile = explorer.searchSync("../site");
+const configFile = explorer.searchSync(siteDir);
 
 // TODO: This should migrate to a separate, imported file
-const defaultConfig = {
-  src: "./src",
-  dist: "./dist",
-  entry: ["./js/index.js"],
-  publicPath: "/dist/",
-  proxy: null // TODO this doesn't do much yet, make devServer condtional
-};
+const defaultConfig = require("./default.config.js");
+// const defaultConfig = {
+//   src: "./src",
+//   dist: "./dist",
+//   entry: ["./js/index.js"],
+//   publicPath: "/dist/",
+//   proxy: null // TODO this doesn't do much yet, make devServer condtional
+// };
 
 const config = { ...defaultConfig, ...configFile.config };
 
@@ -253,8 +257,8 @@ module.exports = {
           //   : "style-loader",
           {
             loader: MiniCssExtractPlugin.loader,
-            // options: { hmr: !isProduction }
-            options: { hmr: true }
+            options: { hmr: !isProduction, sourceMap: true }
+            // options: { hmr: true }
           },
           {
             loader: "css-loader",
@@ -499,6 +503,8 @@ module.exports = {
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
   plugins: [
+    new CaseSensitivePathsPlugin(),
+
     // TODO: Remove this for production?
     new webpack.HotModuleReplacementPlugin(),
     // TODO: cleanStaleWebpackAssets isn't working, dist is full of old

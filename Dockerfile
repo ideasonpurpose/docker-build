@@ -22,6 +22,7 @@ COPY package*.json ./
 RUN npm clean-install
 
 COPY webpack.config.js ./
+COPY default.config.js ./
 COPY zip.js ./
 COPY explore.js ./
 COPY browsersync.js ./
