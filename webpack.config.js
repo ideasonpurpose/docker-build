@@ -15,7 +15,7 @@ const chokidar = require("chokidar");
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const ManifestPlugin = require("webpack-manifest-plugin");
+// const ManifestPlugin = require("webpack-manifest-plugin");
 const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
@@ -513,7 +513,7 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: isProduction ? "css/[name]-[hash].css" : "css/[name].css"
     }),
-    new ManifestPlugin({ writeToFileEmit: true }),
+    // new ManifestPlugin({ writeToFileEmit: true }),
     new copyPlugin([{ from: "**/*", cache: true }], {
       logLevel: isProduction ? "warn" : "error",
       ignore: [".DS_Store", "js/**/*", "sass/**/*", "fonts/**/*", "blocks/**/*"]
