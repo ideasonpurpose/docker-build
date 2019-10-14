@@ -60,7 +60,7 @@
     "postcss-loader": "^3.0.0",
     "pretty-hrtime": "^1.0.3",
     "replacestream": "^4.0.3",
-    "sass-loader": "^7.3.1",
+    "sass-loader": "^8.0.0",
     "source-map-explorer": "^2.1.0",
     "style-loader": "^1.0.0",
     "url-loader": "^2.2.0",

@@ -50,7 +50,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 // console.log("WRITEFILES: ", process.env.WRITEFILES);
 
-const siteDir = path.resolve(__dirname, '../site');
+const siteDir = path.resolve(__dirname, "../site");
 
 const explorer = cosmiconfig("ideasonpurpose");
 const configFile = explorer.searchSync(siteDir);
@@ -274,10 +274,12 @@ module.exports = {
           {
             loader: "sass-loader",
             options: {
-              includePaths: ["node_modules"],
-              sourceComments: true,
-              outputStyle: "expanded",
-              sourceMap: true
+              sassOptions: {
+                includePaths: ["node_modules"],
+                sourceComments: true,
+                outputStyle: "expanded",
+                sourceMap: true
+              }
             }
           }
         ]
