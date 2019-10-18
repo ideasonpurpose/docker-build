@@ -83,9 +83,11 @@ try {
  * Tools live in /usr/src/tools
  * Site is linked to /src/src/site
  */
-config.src = path.resolve("../site", config.src);
-config.dist = path.resolve("../site", config.dist);
+ config.src = path.resolve("../site", config.src);
+ config.dist = path.resolve("../site", config.dist);
 
+ // TODO: Should we create these if they don't exist? Would help with spinning up
+ //       a new evnironment. Maybe?
 if (!fs.existsSync(config.src)) {
   throw new Error(
     `src directory '${config.src}' ` +

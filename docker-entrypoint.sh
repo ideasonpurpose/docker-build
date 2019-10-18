@@ -14,4 +14,10 @@ do
   fi
 done
 
+# If attempting `npm clean-install` without a package-lock.json`
+# run `npm install` instead
+if [[ "$@" == 'npm clean-install' && ! -f /usr/src/site/package-lock.json ]]; then
+  exec npm install
+fi
+
 exec "$@"
