@@ -42,6 +42,12 @@ const cssnano = require("cssnano");
 if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
 
 const isProduction = process.env.NODE_ENV === "production";
+/**
+ * This is a placeholder, try and detect native Windows Docker mounts since
+ * they don't support file-watching (no inotify events), if there's something
+ * clean, use that instead. For now, this will force-enable polling.
+ */
+const usePolling = true;
 
 // /**
 //  * Use `writeFiles` to output everything to disk for non-devServer previews without building for production
@@ -372,10 +378,14 @@ module.exports = {
     /*
      * TODO: Poll options were enabled as a workaround for Docker-win volume inotify
      *       issues. Looking to make this conditional...
+     *       Maybe defined `isWindows` or `hasiNotify` for assigning a value
+     *       Placehodler defined at the top of the file.
+     *       For now, `usePolling` is a boolean (set to true)
      *       ref: https://github.com/docker/for-win/issues/56
      */
     watchOptions: {
-      poll: 1000
+      poll: usePolling && 1000,
+      ignored: ["node_modules", "vendor"]
     },
 
     before: function(app, server) {
@@ -408,10 +418,6 @@ module.exports = {
           // console.log(`Chokidar event: ${event} (${relPath}). Reloading...`);
           server.sockWrite(server.sockets, "content-changed");
         });
-    },
-
-    watchOptions: {
-      ignored: ["node_modules", "vendor"]
     },
 
     proxy: {
