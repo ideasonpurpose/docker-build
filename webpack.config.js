@@ -299,7 +299,7 @@ module.exports = {
        * with a chunkhash fragment.
        *
        * All images in `config.src` will be optimized and copied by
-       * copy-webpack-plugin.
+       * copy-webpack-plugin but will keep their original filenames.
        */
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
@@ -375,19 +375,6 @@ module.exports = {
       warnings: true
     },
 
-    /*
-     * TODO: Poll options were enabled as a workaround for Docker-win volume inotify
-     *       issues. Looking to make this conditional...
-     *       Maybe defined `isWindows` or `hasiNotify` for assigning a value
-     *       Placehodler defined at the top of the file.
-     *       For now, `usePolling` is a boolean (set to true)
-     *       ref: https://github.com/docker/for-win/issues/56
-     */
-    watchOptions: {
-      poll: usePolling && 1000,
-      ignored: ["node_modules", "vendor"]
-    },
-
     before: function(app, server) {
       // TODO: What is this and does it do anything? Leftover?
       app.all("/inform", () => false);
@@ -418,6 +405,19 @@ module.exports = {
           // console.log(`Chokidar event: ${event} (${relPath}). Reloading...`);
           server.sockWrite(server.sockets, "content-changed");
         });
+    },
+
+    /*
+     * TODO: Poll options were enabled as a workaround for Docker-win volume inotify
+     *       issues. Looking to make this conditional...
+     *       Maybe defined `isWindows` or `hasiNotify` for assigning a value
+     *       Placehodler defined at the top of the file.
+     *       For now, `usePolling` is a boolean (set to true)
+     *       ref: https://github.com/docker/for-win/issues/56
+     */
+    watchOptions: {
+      poll: usePolling && 1000,
+      ignored: ["node_modules", "vendor"]
     },
 
     proxy: {
