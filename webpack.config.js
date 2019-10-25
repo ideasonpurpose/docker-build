@@ -83,11 +83,11 @@ try {
  * Tools live in /usr/src/tools
  * Site is linked to /src/src/site
  */
- config.src = path.resolve("../site", config.src);
- config.dist = path.resolve("../site", config.dist);
+config.src = path.resolve("../site", config.src);
+config.dist = path.resolve("../site", config.dist);
 
- // TODO: Should we create these if they don't exist? Would help with spinning up
- //       a new evnironment. Maybe?
+// TODO: Should we create these if they don't exist? Would help with spinning up
+//       a new evnironment. Maybe?
 if (!fs.existsSync(config.src)) {
   throw new Error(
     `src directory '${config.src}' ` +
@@ -368,9 +368,15 @@ module.exports = {
       timings: true,
       warnings: true
     },
-    // watchOptions: {
-    //   poll: 1000
-    // },
+
+    /*
+     * TODO: Poll options were enabled as a workaround for Docker-win volume inotify
+     *       issues. Looking to make this conditional...
+     *       ref: https://github.com/docker/for-win/issues/56
+     */
+    watchOptions: {
+      poll: 1000
+    },
 
     before: function(app, server) {
       // TODO: What is this and does it do anything? Leftover?
