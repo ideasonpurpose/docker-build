@@ -36,6 +36,8 @@ const cssnano = require("cssnano");
 //      'socket hang up' ECONNRESET errors on every request
 // const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
+const prettyHrtime = require("pretty-hrtime");
+
 /**
  * Force mode: production when running the analyzer
  */
@@ -55,6 +57,20 @@ const usePolling = true;
 // const writeFiles = !!process.env.WRITEFILES;
 
 // console.log("WRITEFILES: ", process.env.WRITEFILES);
+
+/**
+ * Attempt to catch the ECONNRESET (Error: socket hang up) errors
+ * which might be slowing WordPress admin stuff to a crawl
+ *
+ * refs:
+ *  https://stackoverflow.com/questions/17245881/node-js-econnreset
+ *  https://github.com/webpack/webpack-dev-server/issues/1642
+ */
+// process.on("uncaughtException", (err, origin) => {
+//   console.log(err.msg);
+//   console.err(err.stack);
+//   console.log("Error caught?");
+// });
 
 const siteDir = path.resolve(__dirname, "../site");
 
@@ -357,7 +373,7 @@ module.exports = {
   //  >  ℹ ｢wds｣: Content not from webpack is served from /usr/src/tools
   devServer: {
     index: "", // enable root proxying
-    bonjour: true, // TODO: Isn't this useless inside a container?
+    // bonjour: true, // TODO: Isn't this useless inside a container?
     host: "0.0.0.0", // This might not be necessary since Docker bridges the port?
     disableHostCheck: true,
     hot: true,
@@ -434,8 +450,14 @@ module.exports = {
 
         onError: (err, req, res) => {
           console.log("PROXY ERROR: ", req.url, err, err.stack);
-          res.writeHead(500, { "Content-Type": "text-plain" });
-          res.end("Webpack DevServer Proxy Error: " + err);
+          if (err.code != "ECONNRESET") {
+            console.log("caught ECONNRESET, continuing");
+          } else {
+            res.writeHead(500, { "Content-Type": "text-plain" });
+            res.end("Webpack DevServer Proxy Error: " + err);
+          }
+          // res.writeHead(500, { "Content-Type": "text-plain" });
+          // res.end("Webpack DevServer Proxy Error: " + err);
         },
 
         onProxyRes: function(proxyRes, req, res) {
@@ -460,6 +482,10 @@ module.exports = {
             "text/plain"
           ];
 
+          const wpRegexp = new RegExp(
+            "^/wp-(?:admin|includes|content/plugins).*(?:css|js|map)$"
+          );
+
           let originalBody = []; //Buffer.from([]);
 
           proxyRes.on("data", data => {
@@ -474,7 +500,7 @@ module.exports = {
             // console.log("proxy ending. chunks:", originalBody.length);
 
             // console.log("memoryUsage:", process.memoryUsage());
-
+            const start = process.hrtime();
             res.statusCode = proxyRes.statusCode;
             if (proxyRes.statusMessage) {
               res.statusMessage = proxyRes.statusMessage;
@@ -491,20 +517,29 @@ module.exports = {
             });
 
             const type = (proxyRes.headers["content-type"] || "").split(";")[0];
-            // let newBody = originalBody;
+
             let newBody;
             originalBody = Buffer.concat(originalBody);
 
-            if (contentTypes.includes(type)) {
+            if (contentTypes.includes(type) && !wpRegexp.test(req.path)) {
               // console.log(req.path, chalk.green(path.basename(req.path)));
-              // console.log(`${chalk.green(req.path)} (${chalk.yellow(type)}) - Doing replacement`);
+              // console.log(
+              //   `${chalk.green(req.path)} (${chalk.yellow(type)}) - Replacing`
+              // );
 
               newBody = replaceTarget(originalBody.toString("utf8"));
               res.setHeader("Content-Length", Buffer.byteLength(newBody));
+              const end = process.hrtime(start);
+              // console.log(
+              //   `${chalk.magenta("Total Processing Time")} : ${chalk.cyan(
+              //     prettyHrtime(end)
+              //   )}`
+              // );
             } else {
-              // console.log(`Content-type: '${type}'. Nothing to replace.`);
+              // console.log(`Skipping ${chalk.gray(req.path)}`);
               newBody = originalBody;
             }
+
             res.end(newBody);
           });
         }
