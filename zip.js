@@ -124,9 +124,6 @@ globby(["**/*", "!src", "!**/*.sql"], globOpts)
       file.contents.on("data", chunk => {
         var stop = new Date().getTime();
 
-        // artificial slowdown 😏
-        while (new Date().getTime() < stop + 2) {}
-
         inBytes += chunk.length;
         spinner.start(
           `Found ${fileCount} files`,
