@@ -18,6 +18,17 @@ RUN apt-get update -qq \
 # for node:11-alpine
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
 
+#
+# NETWORK DEBUGGING TOOLS
+# TODO: Remove or disable if not needed
+#
+RUN apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+      iputils-ping \
+      dnsutils \
+    && rm -rf /var/lib/apt/lists/*
+
+
 COPY package*.json ./
 RUN npm clean-install
 
