@@ -328,8 +328,8 @@ module.exports = {
                 loader: "file-loader",
                 options: {
                   name: "images/[name]-[hash:6].[ext]"
-            }
-          }
+                }
+              }
             }
           }
         ]
@@ -379,8 +379,9 @@ module.exports = {
   devServer: {
     index: "", // enable root proxying
     // bonjour: true, // TODO: Isn't this useless inside a container?
-    host: "0.0.0.0", // This might not be necessary since Docker bridges the port?
+    host: "0.0.0.0",
     disableHostCheck: true,
+    contentBase: "/usr/src/site",
     hot: true,
     overlay: { warnings: true, errors: true },
     writeToDisk: true,
@@ -423,7 +424,7 @@ module.exports = {
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
           const relPath = path.relative(basePath, changedPath);
-          // console.log(`Chokidar event: ${event} (${relPath}). Reloading...`);
+          console.log(`Chokidar event: ${event} (${relPath}). Reloading...`);
           server.sockWrite(server.sockets, "content-changed");
         });
     },
@@ -453,10 +454,10 @@ module.exports = {
         // logLevel: "debug",
 
         onError: (err, req, res) => {
-          console.log("PROXY ERROR: ", req.url, err, err.stack);
-          if (err.code != "ECONNRESET") {
-            console.log("caught ECONNRESET, continuing");
+          if (err.code === "ECONNRESET") {
+            console.log("Caught ECONNRESET error, ignoring...");
           } else {
+            console.log("PROXY ERROR: ", req.url, err, err.stack);
             res.writeHead(500, { "Content-Type": "text-plain" });
             res.end("Webpack DevServer Proxy Error: " + err);
           }
