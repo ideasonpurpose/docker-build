@@ -323,9 +323,13 @@ module.exports = {
           {
             loader: "url-loader",
             options: {
-              fallback: "file-loader",
-              limit: 8192 // TODO: Try this again, did it ever work?
-              // name: "images/[name]-[chunkhash:6].[ext]"
+              limit: 8192,
+              fallback: {
+                loader: "file-loader",
+                options: {
+                  name: "images/[name]-[hash:6].[ext]"
+            }
+          }
             }
           }
         ]
