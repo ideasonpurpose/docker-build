@@ -118,6 +118,7 @@ if (!fs.existsSync(config.src)) {
 }
 
 // console.log("Initial Memory Usage:", process.memoryUsage());
+
 /**
  * Generate an entry object from config.entry.
  * Output names will be based on the source file's basename.
@@ -282,7 +283,6 @@ module.exports = {
           {
             loader: MiniCssExtractPlugin.loader,
             options: { hmr: !isProduction, sourceMap: true }
-            // options: { hmr: true }
           },
           {
             loader: "css-loader",
@@ -360,9 +360,10 @@ module.exports = {
 
   output: {
     path: path.resolve(config.dist),
-    // TODO: All primary output filenames SHOULD NOT include hashes in development
+    /**
+     * Primary output filenames SHOULD NOT include hashes in development
+     */
     filename: isProduction ? "js/[name]-[hash].js" : "js/[name].js",
-    // chunkFilename: "js/[name].bundle.js",
     chunkFilename: "js/[id]-[chunkhash:6].js",
     publicPath: config.publicPath
   },
@@ -438,7 +439,6 @@ module.exports = {
 
     proxy: {
       "**": {
-        // target: `http://${config.proxy}`,
         target: config.proxyUrl.origin,
         secure: false,
         autoRewrite: true,
