@@ -26,6 +26,7 @@ RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
       iputils-ping \
       dnsutils \
+      vim \
     && rm -rf /var/lib/apt/lists/*
 
 
