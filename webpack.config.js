@@ -407,7 +407,9 @@ module.exports = {
        * https://github.com/ideasonpurpose/wp-theme-init/blob/master/src/ThemeInit.php#L85-L111
        */
       app.get("/webpack/reload", function(req, res) {
-        console.log(chalk.yellow("Reload triggered by request to /webpack/reload"));
+        console.log(
+          chalk.yellow("Reload triggered by request to /webpack/reload")
+        );
         server.sockWrite(server.sockets, "content-changed");
         res.json({ status: "Reloading!" });
       });
@@ -425,7 +427,14 @@ module.exports = {
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
           const relPath = path.relative(basePath, changedPath);
-          console.log(`Chokidar event: ${event} (${relPath}). Reloading...`);
+          console.log(
+            "Chokidar event",
+            chalk.bold.yellow(event),
+            "detected in",
+            chalk.green(relPath)
+          );
+          console.log("Reloading...");
+
           server.sockWrite(server.sockets, "content-changed");
         });
     },
