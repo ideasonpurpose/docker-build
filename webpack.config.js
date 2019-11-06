@@ -407,6 +407,7 @@ module.exports = {
        * https://github.com/ideasonpurpose/wp-theme-init/blob/master/src/ThemeInit.php#L85-L111
        */
       app.get("/webpack/reload", function(req, res) {
+        console.log(chalk.yellow("Reload triggered by request to /webpack/reload"));
         server.sockWrite(server.sockets, "content-changed");
         res.json({ status: "Reloading!" });
       });
@@ -455,7 +456,7 @@ module.exports = {
 
         onError: (err, req, res) => {
           if (err.code === "ECONNRESET") {
-            console.log("Caught ECONNRESET error, ignoring...");
+            console.log(chalk.yellow("Caught ECONNRESET error, ignoring..."));
           } else {
             console.log("PROXY ERROR: ", req.url, err, err.stack);
             res.writeHead(500, { "Content-Type": "text-plain" });
