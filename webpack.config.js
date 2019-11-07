@@ -20,6 +20,7 @@ const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const DependencyManifestPlugin = require("./lib/DependencyManifestPlugin.js");
+// const PathsReporterPlugin =require('./lib/PathsReporterPlugin.js');
 
 const ImageminPlugin = require("imagemin-webpack");
 // const imageminGifsicle = require("imagemin-gifsicle");
@@ -604,28 +605,30 @@ module.exports = {
     //   { reload: false }
     // )
 
-    // TODO: Get BundleAnalyzer working
     // TODO: Get explore.js running from postanalyze npm hook
     // TODO: run source-map-explorer
     // TODO: echo a message with soruce-map-=explorer and webpack0-analyzer urls
 
-    // ...(process.env.WEBPACK_BUNDLE_ANALYZER
-    //   ? (
-    new BundleAnalyzerPlugin({
-      analyzerMode: "static",
-      generateStatsFile: isProduction,
-      openAnalyzer: false,
-      reportFilename: `${config.dist}/webpack/stats/index.html`,
-      statsFilename: `${config.dist}/webpack/stats/stats.json`
-    })
-    // new BrowsersyncPlugin()
-    // )
-    //   : false)
+  /**
+   * There is basically no speed impact for this.
+   * So no need to wrap it in `...(true/false? new Bundle(): [])
+   * TODO: Dump link to console after files are written
+   */
+    // ...(isProduction || process.env.WEBPACK_BUNDLE_ANALYZER ?
+      new BundleAnalyzerPlugin({
+          analyzerMode: "static",
+          generateStatsFile: isProduction,
+          openAnalyzer: false,
+          reportFilename: `${siteDir}/webpack/stats/index.html`,
+          statsFilename: `${siteDir}/webpack/stats/stats.json`
+        })
+      // : [])
+
+      // , new PathsReporterPlugin()
   ],
   optimization: {
     splitChunks: {
       chunks: "all",
-      // name: !isProduction,
       cacheGroups: {
         vendors: {
           priority: -10,
