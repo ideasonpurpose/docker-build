@@ -37,7 +37,7 @@ const versionDir =
   pkg && pkgName && pkg.version
     ? `${pkgName}-${pkg.version}`.replace(/[ .]/g, "_")
     : "archive";
-const zipFile = path.resolve(siteDir, `builds/${versionDir}-webpack.zip`); // TODO: remove '-webpack'
+const zipFile = path.resolve(siteDir, `builds/${versionDir}.zip`); // TODO: remove '-webpack'
 
 let inBytes = 0;
 let fileCount = 0;

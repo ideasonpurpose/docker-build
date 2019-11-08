@@ -11,12 +11,12 @@
   "scripts": {
     "analyze": "WEBPACK_BUNDLE_ANALYZER=true webpack",
     "postanalyze": "node explore.js",
-    "explore": "source-map-explorer",
     "build": "NODE_ENV=production webpack --progress --color --display-error-details",
-    "postbuild": "npm run zip && npm run build:preview",
-    "build:preview": "node browsersync.js ",
-    "env": "env",
+    "postbuild": "npm run zip",
     "devserver": "npm run start",
+    "env": "env",
+    "explore": "source-map-explorer",
+    "preview": "node browsersync.js",
     "start": "webpack-dev-server",
     "webpack": "webpack",
     "zip": "node zip.js"
