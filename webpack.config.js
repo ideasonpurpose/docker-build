@@ -428,13 +428,17 @@ module.exports = {
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
           const relPath = path.relative(basePath, changedPath);
-          console.log(
-            "Chokidar event",
-            chalk.bold.yellow(event),
-            "detected in",
-            chalk.green(relPath)
-          );
-          console.log("Reloading...");
+          const eventStrings = { add: "added", change: "changed" };
+          if (eventStrings[event]) {
+            console.log(
+              "File",
+              chalk.green(relPath),
+              chalk.bold.yellow(eventStrings[event]) + ".",
+              "Reloading..."
+            );
+          } else {
+            console.log("Raw event", chalk.bold.yellow(event), "Reloading...");
+          }
 
           server.sockWrite(server.sockets, "content-changed");
         });
