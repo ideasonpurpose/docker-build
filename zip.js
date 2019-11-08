@@ -1,7 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path").posix;
 
-const {cosmiconfigSync} = require("cosmiconfig");
+const { cosmiconfigSync } = require("cosmiconfig");
 
 const chalk = require("chalk");
 const gray = chalk.gray;
@@ -78,12 +78,12 @@ output.on("finish", () => {
   spinner.start("Compressing...");
   spinner.succeed("Compressing... Done!");
   spinner.succeed(
-    `${chalk.bold(path.basename(zipFile))} created in ${duration}.`,
-    chalk.gray(
-      `(${filesize(outBytes)} archive.`,
-      `Saved ${filesize(inBytes - outBytes)}`,
-      `- ${((outBytes / inBytes) * 100).toFixed(2)}%)`
-    )
+    `${chalk.bold(path.basename(zipFile))} created in ${duration}.` +
+      chalk.gray(
+        `(${filesize(outBytes)} archive.`,
+        `Saved ${filesize(inBytes - outBytes)}`,
+        `- ${((outBytes / inBytes) * 100).toFixed(2)}%)`
+      )
   );
 });
 
