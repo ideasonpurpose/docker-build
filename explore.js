@@ -1,9 +1,9 @@
 const path = require("path");
 
 const { explore } = require("source-map-explorer");
-const cosmiconfig = require("cosmiconfig");
-const explorer = cosmiconfig("ideasonpurpose");
-const configFile = explorer.searchSync("../site");
+const { cosmiconfigSync } = require("cosmiconfig");
+const explorerSync = cosmiconfigSync("ideasonpurpose");
+const configFile = explorerSync.search("../site");
 
 // TODO: Get Express in here and serve the dist/webpack directory
 
@@ -21,12 +21,11 @@ const config = { ...defaultConfig, ...configFile.config };
 config.src = path.resolve("../site", config.src);
 config.dist = path.resolve("../site", config.dist);
 
-
 explore(`${config.dist}/js/*`, {
   output: {
     format: "html",
     filename: `${config.dist}/webpack/explore/index.html`
   }
-}).then((result) => console.log('SourceMap Exploreer!'))
-.catch(err => console.log(err));
-
+})
+  .then(result => console.log("SourceMap Exploreer!"))
+  .catch(err => console.log(err));

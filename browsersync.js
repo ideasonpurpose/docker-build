@@ -5,11 +5,11 @@ const chalk = require("chalk");
 
 const lookup = promisify(dns.lookup);
 
-const cosmiconfig = require("cosmiconfig");
+const { cosmiconfigSync } = require("cosmiconfig");
 const browsersync = require("browser-sync").create();
 
-const explorer = cosmiconfig("ideasonpurpose");
-const { config } = explorer.searchSync("../site");
+const explorerSync = cosmiconfigSync("ideasonpurpose");
+const configFile = explorerSync.search("../site");
 
 const getIP = async addr => (await lookup(addr)).address;
 

@@ -1,7 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path").posix;
 
-const cosmiconfig = require("cosmiconfig");
+const {cosmiconfigSync} = require("cosmiconfig");
 
 const chalk = require("chalk");
 const gray = chalk.gray;
@@ -21,8 +21,8 @@ const readPkgUp = require("read-pkg-up");
 
 const siteDir = path.resolve(__dirname, "../site");
 
-const explorer = cosmiconfig("ideasonpurpose");
-const configFile = explorer.searchSync(siteDir);
+const explorerSync = cosmiconfigSync("ideasonpurpose");
+const configFile = explorerSync.search(siteDir);
 
 const defaultConfig = require("./default.config.js");
 const config = { ...defaultConfig, ...configFile.config };

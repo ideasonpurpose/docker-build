@@ -6,7 +6,7 @@ const path = require("path").posix;
 
 const webpack = require("webpack");
 
-const cosmiconfig = require("cosmiconfig");
+const { cosmiconfigSync } = require("cosmiconfig");
 
 const chalk = require("chalk");
 
@@ -75,8 +75,8 @@ const usePolling = true;
 
 const siteDir = path.resolve(__dirname, "../site");
 
-const explorer = cosmiconfig("ideasonpurpose");
-const configFile = explorer.searchSync(siteDir);
+const explorerSync = cosmiconfigSync("ideasonpurpose");
+const configFile = explorerSync.search(siteDir);
 
 // TODO: This should migrate to a separate, imported file
 const defaultConfig = require("./default.config.js");
@@ -609,22 +609,22 @@ module.exports = {
     // TODO: run source-map-explorer
     // TODO: echo a message with soruce-map-=explorer and webpack0-analyzer urls
 
-  /**
-   * There is basically no speed impact for this.
-   * So no need to wrap it in `...(true/false? new Bundle(): [])
-   * TODO: Dump link to console after files are written
-   */
+    /**
+     * There is basically no speed impact for this.
+     * So no need to wrap it in `...(true/false? new Bundle(): [])
+     * TODO: Dump link to console after files are written
+     */
     // ...(isProduction || process.env.WEBPACK_BUNDLE_ANALYZER ?
-      new BundleAnalyzerPlugin({
-          analyzerMode: "static",
-          generateStatsFile: isProduction,
-          openAnalyzer: false,
-          reportFilename: `${siteDir}/webpack/stats/index.html`,
-          statsFilename: `${siteDir}/webpack/stats/stats.json`
-        })
-      // : [])
+    new BundleAnalyzerPlugin({
+      analyzerMode: "static",
+      generateStatsFile: isProduction,
+      openAnalyzer: false,
+      reportFilename: `${siteDir}/webpack/stats/index.html`,
+      statsFilename: `${siteDir}/webpack/stats/stats.json`
+    })
+    // : [])
 
-      // , new PathsReporterPlugin()
+    // , new PathsReporterPlugin()
   ],
   optimization: {
     splitChunks: {
