@@ -20,15 +20,8 @@ const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const DependencyManifestPlugin = require("./lib/DependencyManifestPlugin.js");
-// const PathsReporterPlugin =require('./lib/PathsReporterPlugin.js');
 
 const ImageminPlugin = require("imagemin-webpack");
-// const imageminGifsicle = require("imagemin-gifsicle");
-// const imageminJpegtran = require("imagemin-jpegtran");
-// const imageminOptipng = require("imagemin-optipng");
-// const imageminPngquant = require("imagemin-pngquant");
-// const imageminSvgo = require("imagemin-svgo");
-// const imageminMozjpeg = require("imagemin-mozjpeg");
 
 const autoprefixer = require("autoprefixer");
 const cssnano = require("cssnano");
@@ -46,18 +39,11 @@ if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
 
 const isProduction = process.env.NODE_ENV === "production";
 /**
- * This is a placeholder, try and detect native Windows Docker mounts since
- * they don't support file-watching (no inotify events), if there's something
- * clean, use that instead. For now, this will force-enable polling.
+ * `usePolling` is a placeholder, try and detect native Windows Docker mounts
+ * since they don't support file-watching (no inotify events), if there's
+ * something clean, use that instead. For now, this will force-enable polling.
  */
 const usePolling = true;
-
-// /**
-//  * Use `writeFiles` to output everything to disk for non-devServer previews without building for production
-//  */
-// const writeFiles = !!process.env.WRITEFILES;
-
-// console.log("WRITEFILES: ", process.env.WRITEFILES);
 
 /**
  * Attempt to catch the ECONNRESET (Error: socket hang up) errors
@@ -78,21 +64,12 @@ const siteDir = path.resolve(__dirname, "../site");
 const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir);
 
-// TODO: This should migrate to a separate, imported file
 const defaultConfig = require("./default.config.js");
-// const defaultConfig = {
-//   src: "./src",
-//   dist: "./dist",
-//   entry: ["./js/index.js"],
-//   publicPath: "/dist/",
-//   proxy: null // TODO this doesn't do much yet, make devServer condtional
-// };
 
 const config = { ...defaultConfig, ...configFile.config };
 
 try {
   config.proxyUrl = new URL(config.proxy);
-  // console.log(config.proxyUrl);
 } catch (err) {
   console.log("proxy couldn't be parsed", err);
   config.proxyUrl = {};
@@ -213,7 +190,6 @@ class BrowsersyncPlugin {
 
     console.log(
       chalk.magenta(">>>>>>>>>>> in browserSyncPlugin Class, apply method")
-      // compiler
     );
     compiler.hooks.emit.tapAsync(
       "browsersyncPlugin",
@@ -221,20 +197,13 @@ class BrowsersyncPlugin {
         console.log(
           chalk.magenta(">>>>>>>>>>> in compiler.hooks.emit"),
           Object.keys(compilation.assets)
-          //  compilation.assets
         );
         Object.keys(compilation.assets)
           .filter(key => compilation.assets[key].emitted)
-          .forEach(
-            key => {
-              const { _cachedSize, existsAt, emitted } = compilation.assets[
-                key
-              ];
-              console.log(key, { _cachedSize, existsAt, emitted });
-              // console.log(Object.keys(compilation.assets[key]));
-            }
-            //   console.log(Object.keys(a))
-          );
+          .forEach(key => {
+            const { _cachedSize, existsAt, emitted } = compilation.assets[key];
+            console.log(key, { _cachedSize, existsAt, emitted });
+          });
         callback();
       }
     );
@@ -379,7 +348,6 @@ module.exports = {
   //  >  ℹ ｢wds｣: Content not from webpack is served from /usr/src/tools
   devServer: {
     index: "", // enable root proxying
-    // bonjour: true, // TODO: Isn't this useless inside a container?
     host: "0.0.0.0",
     disableHostCheck: true,
     contentBase: "/usr/src/site",
@@ -397,6 +365,12 @@ module.exports = {
       timings: true,
       warnings: true
     },
+
+    // NOTE: trying to make injection conditional so wp-admin stops reloading
+    // injectClient: compilerConfig => {
+    //   console.log(compilerConfig);
+    //   return true;
+    // },
 
     before: function(app, server) {
       // TODO: What is this and does it do anything? Leftover?
@@ -428,17 +402,12 @@ module.exports = {
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
           const relPath = path.relative(basePath, changedPath);
-          const eventStrings = { add: "added", change: "changed" };
-          if (eventStrings[event]) {
-            console.log(
-              "File",
-              chalk.green(relPath),
-              chalk.bold.yellow(eventStrings[event]) + ".",
-              "Reloading..."
-            );
-          } else {
-            console.log("Raw event", chalk.bold.yellow(event), "Reloading...");
-          }
+          console.log(
+            "Reload triggered by",
+            chalk.bold.yellow(event),
+            "event in",
+            chalk.green(relPath)
+          );
 
           server.sockWrite(server.sockets, "content-changed");
         });
@@ -451,9 +420,10 @@ module.exports = {
      *       Placehodler defined at the top of the file.
      *       For now, `usePolling` is a boolean (set to true)
      *       ref: https://github.com/docker/for-win/issues/56
+     *      `TODO: Safe to remove?
      */
     watchOptions: {
-      poll: usePolling && 1000,
+      poll: usePolling && 500,
       ignored: ["node_modules", "vendor"]
     },
 
@@ -512,7 +482,6 @@ module.exports = {
             // console.log("got data", data.length);
             // console.log("memoryUsage:", process.memoryUsage());
 
-            // originalBody = Buffer.concat([originalBody, data]);
             originalBody.push(data);
           });
 
@@ -542,19 +511,9 @@ module.exports = {
             originalBody = Buffer.concat(originalBody);
 
             if (contentTypes.includes(type) && !wpRegexp.test(req.path)) {
-              // console.log(req.path, chalk.green(path.basename(req.path)));
-              // console.log(
-              //   `${chalk.green(req.path)} (${chalk.yellow(type)}) - Replacing`
-              // );
-
               newBody = replaceTarget(originalBody.toString("utf8"));
               res.setHeader("Content-Length", Buffer.byteLength(newBody));
               const end = process.hrtime(start);
-              // console.log(
-              //   `${chalk.magenta("Total Processing Time")} : ${chalk.cyan(
-              //     prettyHrtime(end)
-              //   )}`
-              // );
             } else {
               // console.log(`Skipping ${chalk.gray(req.path)}`);
               newBody = originalBody;
@@ -627,8 +586,6 @@ module.exports = {
       statsFilename: `${siteDir}/webpack/stats/stats.json`
     })
     // : [])
-
-    // , new PathsReporterPlugin()
   ],
   optimization: {
     splitChunks: {

@@ -108,10 +108,8 @@ globby(["**/*", "!src", "!**/*.sql"], globOpts)
 
       /**
        * Replace the dev folder name with the versioned folder name in hard-coded
-       * include paths. This might only apply to composer's generated autoload
-       * files, but it's very fast so might as well check everything.
-       *
-       * TODO: WordPress specific
+       * include paths. These replacements are only run against webpack's compiled
+       * assets and Composer's generated autoloaders.
        */
       if (isTextPath(f)) {
         const devPath = new RegExp(`wp-content/themes/${pkgName}/`, "gi");
