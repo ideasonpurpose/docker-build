@@ -11,6 +11,7 @@ RUN apt-get update -qq \
       build-essential \
       libgl1-mesa-glx \
       libxi6 \
+      python \
       jq \
       git \
     && rm -rf /var/lib/apt/lists/*
