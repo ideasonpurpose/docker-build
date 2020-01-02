@@ -13,13 +13,17 @@
     "postanalyze": "node explore.js",
     "build": "NODE_ENV=production webpack --progress --color --display-error-details",
     "postbuild": "npm run zip",
+    "build:debug": "node --inspect-brk=0.0.0.0 node_modules/.bin/webpack",
+    "postbuild:debug": "npm run zip:debug",
     "devserver": "npm run start",
     "env": "env",
     "explore": "source-map-explorer",
     "preview": "node browsersync.js",
     "start": "webpack-dev-server",
+    "start:debug": "node --inspect=0.0.0.0 node_modules/.bin/webpack-dev-server",
     "webpack": "webpack",
-    "zip": "node zip.js"
+    "zip": "node zip.js",
+    "zip:debug": "node --inspect-brk=0.0.0.0 zip.js"
   },
   "dependencies": {
     "@babel/core": "^7.7.7",
