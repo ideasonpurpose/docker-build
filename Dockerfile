@@ -1,5 +1,6 @@
 FROM node:12-slim
-#FROM node:11-alpine
+
+LABEL version="0.0.0"
 
 # enable color in the terminal
 ENV TERM xterm-256color
