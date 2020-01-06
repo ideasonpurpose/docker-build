@@ -1,6 +1,6 @@
 {
   "name": "iop-build-tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Bundling our webpack build-chain into Docker",
   "license": "ISC",
   "author": "Ideas On Purpose (https://www.ideasonpurpose.com/)",
