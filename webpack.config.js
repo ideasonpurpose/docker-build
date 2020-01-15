@@ -219,6 +219,8 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
+            ...(!isProduction ? { exclude: /(node_modules)/ } : {}),
+            cacheDirectory: !isProduction,
             sourceType: "unambiguous",
             plugins: [
               "@babel/plugin-syntax-dynamic-import",
@@ -268,6 +270,7 @@ module.exports = {
           {
             loader: "sass-loader",
             options: {
+              implementation: require("node-sass"),
               sassOptions: {
                 includePaths: ["node_modules"],
                 sourceComments: true,
@@ -350,8 +353,8 @@ module.exports = {
     index: "", // enable root proxying
     host: "0.0.0.0",
     disableHostCheck: true,
+    compress: true,
     contentBase: "/usr/src/site",
-    hot: true,
     overlay: { warnings: true, errors: true },
     writeToDisk: true,
     stats: {
@@ -578,20 +581,26 @@ module.exports = {
      * TODO: Dump link to console after files are written
      */
     // ...(isProduction || process.env.WEBPACK_BUNDLE_ANALYZER ?
-    new BundleAnalyzerPlugin({
-      analyzerMode: "static",
-      generateStatsFile: isProduction,
-      openAnalyzer: false,
-      reportFilename: `${siteDir}/webpack/stats/index.html`,
-      statsFilename: `${siteDir}/webpack/stats/stats.json`
-    })
+    ...(!isProduction
+      ? []
+      : [
+          new BundleAnalyzerPlugin({
+            analyzerMode: "static",
+            generateStatsFile: isProduction,
+            openAnalyzer: false,
+            reportFilename: `${siteDir}/webpack/stats/index.html`,
+            statsFilename: `${siteDir}/webpack/stats/stats.json`
+          })
+        ])
     // : [])
   ],
   optimization: {
+    removeEmptyChunks: isProduction,
     splitChunks: {
-      chunks: "all",
+      // chunks: "initial",
       cacheGroups: {
         vendors: {
+          chunks: "all",
           priority: -10,
           test: /[\\/]node_modules[\\/]/,
           reuseExistingChunk: true
