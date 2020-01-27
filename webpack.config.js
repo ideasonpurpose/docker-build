@@ -45,6 +45,31 @@ const isProduction = process.env.NODE_ENV === "production";
  */
 const usePolling = true;
 
+const stats = {
+  all: false,
+  assets: true,
+  builtAt: true,
+  cached: true,
+  children: true,
+  chunks: false,
+  chunkGroups: false,
+  chunkModules: false,
+  chunkOrigins: false,
+  // chunkRelations: true,
+  colors: true,
+  context: "/usr/src/site",
+  depth: true,
+  env: true,
+  errors: true,
+  errorDetails: true,
+  // log: "verbose",
+  logging: false,
+  outputPath: true,
+  source: true,
+  timings: true,
+  warnings: true
+};
+
 /**
  * Attempt to catch the ECONNRESET (Error: socket hang up) errors
  * which might be slowing WordPress admin stuff to a crawl
@@ -357,17 +382,7 @@ module.exports = {
     contentBase: "/usr/src/site",
     overlay: { warnings: true, errors: true },
     writeToDisk: true,
-    stats: {
-      all: false,
-      assets: true,
-      chunks: false,
-      colors: true,
-      depth: false,
-      errorDetails: true,
-      errors: true,
-      timings: true,
-      warnings: true
-    },
+    stats,
 
     // NOTE: trying to make injection conditional so wp-admin stops reloading
     // injectClient: compilerConfig => {
@@ -531,6 +546,7 @@ module.exports = {
 
   mode: isProduction ? "production" : "development",
 
+  stats,
   devtool: !isProduction
     ? "cheap-module-eval-source-map"
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
