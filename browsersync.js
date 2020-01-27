@@ -1,26 +1,63 @@
-const promisify = require("util").promisify;
-const dns = require("dns");
+const path = require("path");
 
-const chalk = require("chalk");
+require("dotenv").config("/usr/src/site");
 
-const lookup = promisify(dns.lookup);
+const browsersync = require("browser-sync").create(process.env.NAME);
+const webpack = require("webpack");
+const webpackDevMiddleware = require("webpack-dev-middleware");
+const webpackHotMiddleware = require("webpack-hot-middleware");
 
-const { cosmiconfigSync } = require("cosmiconfig");
-const browsersync = require("browser-sync").create();
+const webpackConfig = require("./webpack.config");
 
-const explorerSync = cosmiconfigSync("ideasonpurpose");
-const configFile = explorerSync.search("../site");
-
-const getIP = async addr => (await lookup(addr)).address;
-
-console.log(
-  chalk.bold("Previewing Production Build with Browsersync"),
-  chalk.gray(" (Control-C to cancel)")
+webpackConfig.entry.main.unshift(
+  "webpack/hot/dev-server",
+  "webpack-hot-middleware/client"
 );
+webpackConfig.plugins.unshift(
+  new webpack.HotModuleReplacementPlugin(),
+  new webpack.NoEmitOnErrorsPlugin()
+);
+// webpackConfig.mode = "development"; // l
+webpackConfig.devtool = "cheap-module-eval-source-map";
 
-(async () =>
-  browsersync.init({
-    proxy: config.proxy,
-    open: false,
-    host: await getIP("host.docker.internal")
-  }))();
+const bundler = webpack(webpackConfig);
+
+// console.log(process.env);
+// console.log(webpackConfig);
+
+// console.log(webpackHotMiddleware(bundler));
+
+const target =
+  "http://devserver-proxy-token--d939bef2a41c4aa154ddb8db903ce19fff338b61";
+
+const middleware = [
+  webpackDevMiddleware(bundler, {
+    publicPath: webpackConfig.output.publicPath,
+    path: webpackConfig.output.path,
+    stats: webpackConfig.stats,
+    // writeToDisk: true
+  }),
+  webpackHotMiddleware(bundler)
+];
+
+// console.log(middleware);
+
+browsersync.init({
+  open: false,
+
+  server: {
+    baseDir: "../site/",  //"/usr/src/site/", //webpackConfig.output.path,
+
+    directory: true,
+
+  },
+  middleware,
+
+  // proxy: { target },
+
+  logConnections: true,
+  files: [
+    path.resolve(webpackConfig.context, "../**/*.php")
+    // path.resolve(webpackConfig.context, "../dist/{css,images}/**/*")
+  ]
+});
