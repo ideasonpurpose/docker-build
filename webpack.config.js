@@ -1,5 +1,7 @@
 // TODO: Try out HTML-wbpack-plugin with dual outputs (head and footer)
 // TODO: Recognize project types and adjust output? WordPress? Jekyll?
+const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
+const smp = new SpeedMeasurePlugin({ granularLoaderData: true });
 
 const fs = require("fs-extra");
 const path = require("path").posix;
@@ -16,6 +18,9 @@ const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 // const ManifestPlugin = require("webpack-manifest-plugin");
+
+const HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
+
 const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
@@ -245,7 +250,7 @@ class BrowsersyncPlugin {
   }
 }
 
-module.exports = {
+webpackConfig = {
   module: {
     rules: [
       {
@@ -254,7 +259,8 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            ...(!isProduction ? { exclude: /(node_modules)/ } : {}),
+            // ...(!isProduction ? { exclude: /(node_modules)/ } : {}),
+            exclude: /node_modules/,
             cacheDirectory: !isProduction,
             sourceType: "unambiguous",
             plugins: [
@@ -293,7 +299,21 @@ module.exports = {
           },
           {
             loader: "css-loader",
-            options: { sourceMap: true }
+            options: {
+              sourceMap: true
+              // url: true,
+              // import: false
+              // url: (url, resourcePath) => {
+              //   console.log('### CSS-LOADER: url', url, resourcePath);
+              //   debugger;
+              //   return true;
+              // },
+              // // import: false, // all @import should already have been handled by Sass or PostCSS
+              // import: (parsedImport, resourcePath) => {
+              //   console.log('### CSS-LOADER: import', parsedImport, resourcePath);
+              //   return true;
+              // }
+            }
           },
           {
             loader: "postcss-loader",
@@ -330,6 +350,7 @@ module.exports = {
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
         use: [
+          "cache-loader",
           {
             loader: "url-loader",
             options: {
@@ -373,12 +394,13 @@ module.exports = {
   entry,
 
   output: {
-    path: path.resolve(config.dist),
+    path: path.resolve(__dirname, config.dist),
+    pathinfo: false,
     /**
      * Primary output filenames SHOULD NOT include hashes in development
      */
-    filename: isProduction ? "js/[name]-[hash].js" : "js/[name].js",
-    chunkFilename: "js/[id]-[chunkhash:6].js",
+    filename: isProduction ? "[name]-[hash].js" : "[name].js",
+    chunkFilename: "[id]-[chunkhash:6].js",
     publicPath: config.publicPath
   },
 
@@ -390,8 +412,8 @@ module.exports = {
     index: "", // enable root proxying
     host: "0.0.0.0",
     disableHostCheck: true,
-    compress: true,
-    contentBase: "/usr/src/site",
+    compress: false,
+    // contentBase: "/usr/src/site",
     overlay: { warnings: true, errors: true },
     writeToDisk: true,
     stats,
@@ -404,7 +426,7 @@ module.exports = {
 
     before: function(app, server) {
       // TODO: What is this and does it do anything? Leftover?
-      app.all("/inform", () => false);
+      // app.all("/inform", () => false);
       /**
        * The "/webpack/reload" endpoint will trigger a full devServer refresh
        * See current Browsersync implementation here:
@@ -425,7 +447,7 @@ module.exports = {
        */
       chokidar
         .watch([path.resolve(config.src, "../**/*.php")], {
-          ignored: ["**/.git/**", "**/vendor/**"],
+          ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
           ignoreInitial: true,
           ignorePermissionErrors: true
         })
@@ -564,15 +586,25 @@ module.exports = {
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
   plugins: [
-    new CaseSensitivePathsPlugin(),
+    // new CaseSensitivePathsPlugin({debug: true}),
+
+    // ...(!isProduction ? [new webpack.HotModuleReplacementPlugin()] : []),
+    // new webpack.debug.ProfilingPlugin({
+    //   outputPath: `${siteDir}/webpack/events.json`
+    // }),
+
+    // new HardSourceWebpackPlugin(),
 
     // TODO: Remove this for production?
-    new webpack.HotModuleReplacementPlugin(),
+    // ...(isProduction ? [] : [new webpack.HotModuleReplacementPlugin()]),
+    // new webpack.HotModuleReplacementPlugin(),
+
     // TODO: cleanStaleWebpackAssets isn't working, dist is full of old
     //       garbage that's never getting removed
-    new CleanWebpackPlugin({ verbose: false, cleanStaleWebpackAssets: false }),
+    new CleanWebpackPlugin(),
+    // {verbose: false, cleanStaleWebpackAssets: false}
     new MiniCssExtractPlugin({
-      filename: isProduction ? "css/[name]-[hash].css" : "css/[name].css"
+      filename: isProduction ? "[name]-[hash].css" : "[name].css"
     }),
     // new ManifestPlugin({ writeToFileEmit: true }),
     new copyPlugin([{ from: "**/*", cache: true }], {
@@ -582,7 +614,8 @@ module.exports = {
 
     new ImageminPlugin({
       bail: false, // Ignore errors on corrupted images
-      cache: false,
+      cache: true,
+      // exclude: [/node_modules/],
       name: "[path][name].[ext]",
       imageminOptions: {
         plugins: isProduction ? imageminpProdPlugins : imageminDevPlugins
@@ -638,3 +671,7 @@ module.exports = {
     }
   }
 };
+
+module.exports = webpackConfig;
+// SMP plugin:
+// module.exports = smp.wrap(webpackConfig);
