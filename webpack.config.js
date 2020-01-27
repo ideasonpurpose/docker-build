@@ -43,18 +43,12 @@ const prettyHrtime = require("pretty-hrtime");
 if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
 
 const isProduction = process.env.NODE_ENV === "production";
-/**
- * `usePolling` is a placeholder, try and detect native Windows Docker mounts
- * since they don't support file-watching (no inotify events), if there's
- * something clean, use that instead. For now, this will force-enable polling.
- */
-const usePolling = true;
 
 const stats = {
   all: false,
   assets: true,
   builtAt: true,
-  cached: true,
+  cached: false,
   children: true,
   chunks: false,
   chunkGroups: false,
@@ -125,7 +119,15 @@ if (!fs.existsSync(config.src)) {
   );
 }
 
-// console.log("Initial Memory Usage:", process.memoryUsage());
+/**
+ * `usePolling` is a placeholder, try and detect native Windows Docker mounts
+ * since they don't support file-watching (no inotify events), if there's
+ * something clean, use that instead. For now, this will force-enable polling.
+ */
+ const usePolling = config.usePolling !== undefined ? !!config.usePolling : true;
+
+ console.log('usePolling', usePolling);
+ console.log('config.usePolling', config.usePolling);
 
 /**
  * Generate an entry object from config.entry.
@@ -293,16 +295,21 @@ webpackConfig = {
           // isProduction || writeFiles
           //   ? MiniCssExtractPlugin.loader
           //   : "style-loader",
+          /**
+           *  TODO: Re-enable CSS source maps when MiniCssExtractPlugin#481 is released
+           *        For now, sourceMaps are broken with 0.9.0
+           *        https://github.com/webpack-contrib/mini-css-extract-plugin/pull/481
+           */
           {
             loader: MiniCssExtractPlugin.loader,
-            options: { hmr: !isProduction, sourceMap: true }
+            options: { hmr: !isProduction }
           },
           {
             loader: "css-loader",
             options: {
-              sourceMap: true
-              // url: true,
-              // import: false
+              sourceMap: false,
+              url: !isProduction,
+              import: !isProduction
               // url: (url, resourcePath) => {
               //   console.log('### CSS-LOADER: url', url, resourcePath);
               //   debugger;
@@ -318,7 +325,7 @@ webpackConfig = {
           {
             loader: "postcss-loader",
             options: {
-              sourceMap: true,
+              sourceMap: false,
               plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])]
             }
           },
@@ -331,7 +338,7 @@ webpackConfig = {
                 // includePaths: ["node_modules"],
                 includePaths: [config.src],
                 outputStyle: "expanded",
-                sourceMap: true,
+                sourceMap: false,
                 ...(config.sass === "node-sass" ? { sourceComments: true } : {})
               }
             }
@@ -584,8 +591,14 @@ webpackConfig = {
   mode: isProduction ? "production" : "development",
 
   stats,
+
+  performance: {
+    hints: isProduction ? "warning" : false
+  },
   devtool: !isProduction
-    ? "cheap-module-eval-source-map"
+    ? false
+    // ? "cheap-module-eval-source-map"
+    // ? "cheap-eval-source-map"
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
   plugins: [
@@ -659,19 +672,19 @@ webpackConfig = {
     // : [])
   ],
   optimization: {
-    removeEmptyChunks: isProduction,
-    splitChunks: {
-      // chunks: "initial",
-      cacheGroups: {
-        vendors: {
-          chunks: "all",
-          priority: -10,
-          test: /[\\/]node_modules[\\/]/,
-          reuseExistingChunk: true
-        }
-      },
-      minSize: 30000
-    }
+    // removeEmptyChunks: isProduction,
+    // splitChunks: {
+    //   // chunks: "initial",
+    //   cacheGroups: {
+    //     vendors: {
+    //       chunks: "all",
+    //       priority: -10,
+    //       test: /[\\/]node_modules[\\/]/,
+    //       reuseExistingChunk: true
+    //     }
+    //   },
+    //   minSize: 30000
+    // }
   }
 };
 
