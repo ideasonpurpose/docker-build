@@ -38,6 +38,10 @@ This can be an array of paths, a string path or a pre-configured Webpack entry o
 
 This is the public url path to the dist folder. Web browsers will reference our generated assets from this location. These paths are visible in the generated manifest. Paths are joined naively, you'll probably want to include a trailing slash.
 
+#### `sass` (optional)
+
+Specify the Sass implementation to use. Used by [Sass-loader][]. Supports `node-sass` ([LibSass][]) and `sass` ([Dart-sass][])
+
 #### `proxy` (optional)
 
 When set, Webpack's devserver will proxy this server, replacing requested assets as appropriate.
@@ -150,4 +154,7 @@ To iterate locally, build the image using the same name as the Docker Hub remote
 $ docker build -t ideasonpurpose/docker-build .
 ```
 
+[sass-loader]: https://webpack.js.org/loaders/sass-loader/
+[libsass]: https://github.com/sass/node-sass
+[dart-sass]: https://github.com/sass/dart-sass
 [cosmiconfig]: https://www.npmjs.com/package/cosmiconfig

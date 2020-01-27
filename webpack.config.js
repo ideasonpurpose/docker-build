@@ -155,6 +155,16 @@ const entry = !Array.isArray(config.entry)
       return obj;
     }, {});
 
+/**
+ * Normalize the sass implementation
+ */
+config.sass = config.sass.toString().toLowerCase();
+config.sass = config.sass === "dart-sass" ? "sass" : config.sass; // make 'dart-sass' an allas for 'sass'
+const validSassImplementations = ["node-sass", "sass"];
+if (!validSassImplementations.includes(config.sass)) {
+  config.sass = "node-sass";
+}
+
 const imageminpProdPlugins = [
   ["gifsicle", { optimizationLevel: 3 }],
   [
@@ -295,12 +305,14 @@ module.exports = {
           {
             loader: "sass-loader",
             options: {
-              implementation: require("node-sass"),
+              implementation: require(config.sass),
+              webpackImporter: true,
               sassOptions: {
-                includePaths: ["node_modules"],
-                sourceComments: true,
+                // includePaths: ["node_modules"],
+                includePaths: [config.src],
                 outputStyle: "expanded",
-                sourceMap: true
+                sourceMap: true,
+                ...(config.sass === "node-sass" ? { sourceComments: true } : {})
               }
             }
           }
