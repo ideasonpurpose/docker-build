@@ -19,7 +19,7 @@
     "env": "env",
     "explore": "source-map-explorer",
     "preview": "node browsersync.js",
-    "start": "webpack-dev-server --color --profile --progress",
+    "start": "webpack-dev-server",
     "start:debug": "node --inspect-brk=0.0.0.0 node_modules/.bin/webpack-dev-server",
     "version": "version-everything && git add -u",
     "webpack": "webpack --progress",
