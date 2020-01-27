@@ -1,15 +1,17 @@
-FROM node:12-slim
+FROM node:13-slim
 
 LABEL version="0.2.0"
 
 # enable color in the terminal
 ENV TERM xterm-256color
+ENV npm_config_cache /usr/src/site/webpack/.cache
 
 WORKDIR /usr/src/tools
 
 RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
       build-essential \
+      dh-autoreconf \
       libgl1-mesa-glx \
       libxi6 \
       python \
@@ -24,12 +26,15 @@ RUN apt-get update -qq \
 # NETWORK DEBUGGING TOOLS
 # TODO: Remove or disable if not needed
 #
-RUN apt-get update -qq \
-    && apt-get install -y --no-install-recommends \
-      iputils-ping \
-      dnsutils \
-      vim \
-    && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update -qq \
+#     && apt-get install -y --no-install-recommends \
+#       iputils-ping \
+#       dnsutils \
+#       vim \
+#     && rm -rf /var/lib/apt/lists/*
+
+# Set node cache to use the persistent volume
+# RUN npm config set cache /usr/src/site/webpack/.cache
 
 
 COPY package*.json ./
@@ -42,6 +47,7 @@ COPY explore.js ./
 COPY browsersync.js ./
 COPY lib ./lib
 
+# alpine cleanup:
 # run apk del build-deps
 
 COPY docker-entrypoint.sh /usr/local/bin/
