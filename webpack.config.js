@@ -124,10 +124,11 @@ if (!fs.existsSync(config.src)) {
  * since they don't support file-watching (no inotify events), if there's
  * something clean, use that instead. For now, this will force-enable polling.
  */
- const usePolling = config.usePolling !== undefined ? !!config.usePolling : true;
+const usePolling = config.usePolling !== undefined ? !!config.usePolling : true;
+// TODO: When null-coalescing works:  `const usePolling = config.usePolling ?? true;`
 
- console.log('usePolling', usePolling);
- console.log('config.usePolling', config.usePolling);
+console.log("usePolling", usePolling);
+console.log("config.usePolling", config.usePolling);
 
 /**
  * Generate an entry object from config.entry.
@@ -596,9 +597,7 @@ webpackConfig = {
     hints: isProduction ? "warning" : false
   },
   devtool: !isProduction
-    ? false
-    // ? "cheap-module-eval-source-map"
-    // ? "cheap-eval-source-map"
+    ? false /* "cheap-module-eval-source-map" */
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
   plugins: [
