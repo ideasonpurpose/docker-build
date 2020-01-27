@@ -415,7 +415,8 @@ webpackConfig = {
     compress: false,
     // contentBase: "/usr/src/site",
     overlay: { warnings: true, errors: true },
-    writeToDisk: true,
+    hot: true,
+    // writeToDisk: true,
     stats,
 
     // NOTE: trying to make injection conditional so wp-admin stops reloading
@@ -472,7 +473,9 @@ webpackConfig = {
      *       Placehodler defined at the top of the file.
      *       For now, `usePolling` is a boolean (set to true)
      *       ref: https://github.com/docker/for-win/issues/56
-     *      `TODO: Safe to remove?
+     *            https://www.npmjs.com/package/is-windows
+     *       TODO: Safe to remove?
+     *       TODO: Test on vanilla Windows (should now work in WSL)
      */
     watchOptions: {
       poll: usePolling && 500,
