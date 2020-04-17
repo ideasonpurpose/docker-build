@@ -1,0 +1,23 @@
+name: Push Tag to Docker Hub
+
+on:
+  release:
+    types: [ created, edited, published ]
+
+env: 
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+  
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build . --tag ideasonpurpose/docker-build:vers
+
+    - name: whatawegot?
+      run: env
