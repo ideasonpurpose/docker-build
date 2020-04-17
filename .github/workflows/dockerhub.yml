@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   release:
-    types: [ published ]
+    types: [ published, edited ]
 
 env: 
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
@@ -17,6 +17,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - uses: actions/cache@v1
+      with:
+        path: /var/lib/docker
+        key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
+        restore-keys: |
+          ${{ runner.os }}-docker
     
     - name: Log into Docker Hub
       run: docker login --username $DOCKER_USER --password $DOCKER_PASS
