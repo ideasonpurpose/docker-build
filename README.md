@@ -16,7 +16,7 @@ module.exports = {
   dist: "./dist",
   entry: ["./js/index.js"],
   publicPath: "/dist/",
-  proxy: null
+  proxy: null,
 };
 ```
 
@@ -60,7 +60,7 @@ module.exports = {
   dist: `./wp-content/themes/${pkg.name}/dist`,
   entry: ["./js/main.js", "./js/admin.js", "./js/editor-blocks.js"],
   publicPath: "/_assets/dist/",
-  proxy: `${pkg.name}.test`
+  proxy: `${pkg.name}.test`,
 };
 ```
 
@@ -140,7 +140,7 @@ Deferred dynamic imports also work. To use these, follow the example in the [Web
 
 ```js
 if (some.condition) {
-  import("./other-file.js").then(module => {
+  import("./other-file.js").then((module) => {
     // access any exports from module here
   });
 }
@@ -151,7 +151,7 @@ if (some.condition) {
 To iterate locally, build the image using the same name as the Docker Hub remote. Docker will use the local copy.
 
 ```sh
-$ docker build -t ideasonpurpose/docker-build .
+$ docker build . --tag ideasonpurpose/docker-build
 ```
 
 [sass-loader]: https://webpack.js.org/loaders/sass-loader/
