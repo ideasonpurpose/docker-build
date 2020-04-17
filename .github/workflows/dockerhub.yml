@@ -31,9 +31,9 @@ jobs:
       run: docker push ideasonpurpose/docker-build
       
     - name: '[RELEASE] Tag image with release version'
-      if: startsWith( github.ref, 'refs/tags/`)
+      if: startsWith( github.ref, 'refs/tags/')
       run: docker tag ideasonpurpose/docker-build ideasonpurpose/docker-build:${GITHUB_REF/refs\/tags\/v/}
       
     - name: '[RELEASE] Deploy release-tagged image to Docker Hub'
-      if: startsWith( github.ref, 'refs/tags/`)
+      if: startsWith( github.ref, 'refs/tags/')
       run: docker push ideasonpurpose/docker-build:${GITHUB_REF/refs\/tags\/v/}
