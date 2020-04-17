@@ -9,6 +9,13 @@
       "request": "launch",
       "name": "Prettier hrtime",
       "program": "${workspaceFolder}/prettier-hrtime.js"
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Debug from container",
+      "port": 9229,
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }
