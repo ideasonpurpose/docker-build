@@ -30,7 +30,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: /var/lib/docker
-        key: ${{ runner.os }}-Dockerfile
+        key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
         restore-keys: |
           ${{ runner.os }}-docker-
 
