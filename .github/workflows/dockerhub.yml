@@ -35,16 +35,16 @@ jobs:
     - name: Log into Docker Hub
       run: docker login --username $DOCKER_USER --password $DOCKER_PASS
       
-    - name: Build the Docker image
+    - name: Build image from Dockerfile
       run: docker build . --tag ideasonpurpose/docker-build
     
-    - name: Deploy $LATEST to Docker Hub
+    - name: Deploy $LATEST image to Docker Hub
       run: docker push ideasonpurpose/docker-build
       
-    - name: Tag image with release version
+    - name: '[RELEASE] Tag image with release version'
       if: github.event == 'release'
       run: docker tag ideasonpurpose/docker-build ideasonpurpose/docker-build:$DOCKER_TAG
       
-    - name: Deploy tag ${{ env.DOCKER_TAG }} to Docker Hub
+    - name: '[RELEASE] Deploy release-tagged image to Docker Hub'
       if: github.event == 'release'
       run: docker push ideasonpurpose/docker-build:$DOCKER_TAG
