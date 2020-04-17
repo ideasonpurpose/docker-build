@@ -3,8 +3,7 @@ name: Push Images to Docker Hub
 on:
   push:
     branches: [ master ]
-  release:
-    types: [ created, published, edited ]
+    tags: ['v*'] 
 
 env: 
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
@@ -18,21 +17,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Cache node_modules
-      uses: actions/cache@v1
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-
-    - name: Cache /var/lib/docker
-      uses: actions/cache@v1
-      with:
-        path: /var/lib/docker
-        key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile') }}
-        restore-keys: |
-          ${{ runner.os }}-docker-
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
 
     - name: Log into Docker Hub
       run: docker login --username $DOCKER_USER --password $DOCKER_PASS
@@ -50,10 +38,3 @@ jobs:
     - name: '[RELEASE] Deploy release-tagged image to Docker Hub'
       if: github.event == 'release'
       run: docker push ideasonpurpose/docker-build:$DOCKER_TAG
-
-    - name: Reset permissions so caching works correctly
-      run: |
-        ls -la 
-        ls -la ~
-        echo ${{ github.workspace }}
-        sudo chown -R $(whoami):$(id -ng) /var/lib/docker
