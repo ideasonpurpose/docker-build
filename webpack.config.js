@@ -194,10 +194,12 @@ const imageminpProdPlugins = [
         { cleanupIDs: false },
         // { convertTransform: true }, // default?
         // { removeTitle: true },
-        { sortAttrs: true }
-      ]
-    }
-  ]
+        { removeViewBox: false },
+        // { removeDimensions: true },
+        { sortAttrs: true },
+      ],
+    },
+  ],
 ];
 
 const imageminDevPlugins = [
@@ -213,10 +215,12 @@ const imageminDevPlugins = [
         { cleanupIDs: false },
         // { convertTransform: true }, // default
         // { removeTitle: true },  //default?
-        { sortAttrs: true }
-      ]
-    }
-  ]
+        { removeViewBox: false },
+        // { removeDimensions: true },
+        { sortAttrs: true },
+      ],
+    },
+  ],
 ];
 
 class BrowsersyncPlugin {
