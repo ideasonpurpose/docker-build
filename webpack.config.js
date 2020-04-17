@@ -66,7 +66,7 @@ const stats = {
   outputPath: true,
   source: true,
   timings: true,
-  warnings: true
+  warnings: true,
 };
 
 /**
@@ -159,7 +159,7 @@ const entry = !Array.isArray(config.entry)
   : config.entry.reduce((obj, src) => {
       obj[path.parse(src).name] = []
         .concat(obj[path.parse(src).name], src)
-        .filter(i => i);
+        .filter((i) => i);
       return obj;
     }, {});
 
@@ -181,8 +181,8 @@ const imageminpProdPlugins = [
       strip: true,
       dithering: 0.3,
       quality: [0.5, 0.8],
-      verbose: true
-    }
+      verbose: true,
+    },
   ],
   ["mozjpeg", { quality: 80, progressive: true }],
   [
@@ -246,8 +246,8 @@ class BrowsersyncPlugin {
           Object.keys(compilation.assets)
         );
         Object.keys(compilation.assets)
-          .filter(key => compilation.assets[key].emitted)
-          .forEach(key => {
+          .filter((key) => compilation.assets[key].emitted)
+          .forEach((key) => {
             const { _cachedSize, existsAt, emitted } = compilation.assets[key];
             console.log(key, { _cachedSize, existsAt, emitted });
           });
@@ -274,7 +274,7 @@ webpackConfig = {
               "@babel/plugin-syntax-dynamic-import",
               ...(isProduction
                 ? []
-                : ["@babel/plugin-transform-react-jsx-source"])
+                : ["@babel/plugin-transform-react-jsx-source"]),
             ],
             presets: [
               [
@@ -285,13 +285,13 @@ webpackConfig = {
                   configPath: config.src,
                   corejs: 3,
                   modules: false,
-                  debug: false
-                }
+                  debug: false,
+                },
               ],
-              "@babel/preset-react"
-            ]
-          }
-        }
+              "@babel/preset-react",
+            ],
+          },
+        },
       },
       {
         test: /\.(scss|css)$/,
@@ -307,14 +307,14 @@ webpackConfig = {
            */
           {
             loader: MiniCssExtractPlugin.loader,
-            options: { hmr: !isProduction }
+            options: { hmr: !isProduction },
           },
           {
             loader: "css-loader",
             options: {
               sourceMap: false,
               url: !isProduction,
-              import: !isProduction
+              import: !isProduction,
               // url: (url, resourcePath) => {
               //   console.log('### CSS-LOADER: url', url, resourcePath);
               //   debugger;
@@ -325,14 +325,14 @@ webpackConfig = {
               //   console.log('### CSS-LOADER: import', parsedImport, resourcePath);
               //   return true;
               // }
-            }
+            },
           },
           {
             loader: "postcss-loader",
             options: {
               sourceMap: false,
-              plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])]
-            }
+              plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])],
+            },
           },
           {
             loader: "sass-loader",
@@ -344,11 +344,13 @@ webpackConfig = {
                 includePaths: [config.src],
                 outputStyle: "expanded",
                 sourceMap: false,
-                ...(config.sass === "node-sass" ? { sourceComments: true } : {})
-              }
-            }
-          }
-        ]
+                ...(config.sass === "node-sass"
+                  ? { sourceComments: true }
+                  : {}),
+              },
+            },
+          },
+        ],
       },
       /**
        * This image loader is specifically for images which are required or
@@ -370,23 +372,23 @@ webpackConfig = {
               fallback: {
                 loader: "file-loader",
                 options: {
-                  name: "images/[name]-[hash:6].[ext]"
-                }
-              }
-            }
-          }
-        ]
+                  name: "images/[name]-[hash:6].[ext]",
+                },
+              },
+            },
+          },
+        ],
       },
       {
         test: /fonts\/.*\.(ttf|eot|woff2?)/i,
         use: [
           {
             loader: "file-loader",
-            options: { name: "fonts/[name].[ext]" }
-          }
-        ]
-      }
-    ]
+            options: { name: "fonts/[name].[ext]" },
+          },
+        ],
+      },
+    ],
   },
 
   context: path.resolve(config.src),
@@ -395,12 +397,12 @@ webpackConfig = {
     // symlinks: false, // attempted fix for `Cannot assign to read only property 'exports' of object` (module.exports)-- didn't work
     modules: [
       path.resolve("../tools/node_modules"),
-      path.resolve("../site/node_modules")
-    ]
+      path.resolve("../site/node_modules"),
+    ],
   },
 
   resolveLoader: {
-    modules: [path.resolve("../tools/node_modules")]
+    modules: [path.resolve("../tools/node_modules")],
   },
 
   entry,
@@ -413,7 +415,7 @@ webpackConfig = {
      */
     filename: isProduction ? "[name]-[hash].js" : "[name].js",
     chunkFilename: "[id]-[chunkhash:6].js",
-    publicPath: config.publicPath
+    publicPath: config.publicPath,
   },
 
   // TODO: Add contentBase property to the devServer object.
@@ -437,7 +439,7 @@ webpackConfig = {
     //   return true;
     // },
 
-    before: function(app, server) {
+    before: function (app, server) {
       // TODO: What is this and does it do anything? Leftover?
       // app.all("/inform", () => false);
       /**
@@ -446,7 +448,7 @@ webpackConfig = {
        *
        * https://github.com/ideasonpurpose/wp-theme-init/blob/master/src/ThemeInit.php#L85-L111
        */
-      app.get("/webpack/reload", function(req, res) {
+      app.get("/webpack/reload", function (req, res) {
         console.log(
           chalk.yellow("Reload triggered by request to /webpack/reload")
         );
@@ -462,7 +464,7 @@ webpackConfig = {
         .watch([path.resolve(config.src, "../**/*.php")], {
           ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
           ignoreInitial: true,
-          ignorePermissionErrors: true
+          ignorePermissionErrors: true,
         })
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
@@ -491,7 +493,7 @@ webpackConfig = {
      */
     watchOptions: {
       poll: usePolling && 500,
-      ignored: ["node_modules", "vendor"]
+      ignored: ["node_modules", "vendor"],
     },
 
     proxy: {
@@ -517,13 +519,13 @@ webpackConfig = {
           // res.end("Webpack DevServer Proxy Error: " + err);
         },
 
-        onProxyRes: function(proxyRes, req, res) {
+        onProxyRes: function (proxyRes, req, res) {
           // console.log('config.proxyUrl.origin', config.proxyUrl.origin);
           // TODO: WHY OH WHY is this replacing the hostname and not the protocol too?
           //      Seems like a disaster waiting to happen.
           //      Maybe this should be several replacements? They're fast enough
           // TODO: Log the fuck out of this.
-          const replaceTarget = str =>
+          const replaceTarget = (str) =>
             str.replace(
               new RegExp(config.proxyUrl.host, "gi"),
               req.headers.host
@@ -536,7 +538,7 @@ webpackConfig = {
             "multipart/form-data",
             "text/css",
             "text/html",
-            "text/plain"
+            "text/plain",
           ];
 
           const wpRegexp = new RegExp(
@@ -545,7 +547,7 @@ webpackConfig = {
 
           let originalBody = []; //Buffer.from([]);
 
-          proxyRes.on("data", data => {
+          proxyRes.on("data", (data) => {
             // console.log("got data", data.length);
             // console.log("memoryUsage:", process.memoryUsage());
 
@@ -562,7 +564,7 @@ webpackConfig = {
               res.statusMessage = proxyRes.statusMessage;
             }
 
-            Object.keys(proxyRes.headers).forEach(key => {
+            Object.keys(proxyRes.headers).forEach((key) => {
               const header = proxyRes.headers[key];
               if (header !== undefined) {
                 res.setHeader(
@@ -588,9 +590,9 @@ webpackConfig = {
 
             res.end(newBody);
           });
-        }
-      }
-    }
+        },
+      },
+    },
   },
 
   mode: isProduction ? "production" : "development",
@@ -598,7 +600,7 @@ webpackConfig = {
   stats,
 
   performance: {
-    hints: isProduction ? "warning" : false
+    hints: isProduction ? "warning" : false,
   },
   devtool: !isProduction
     ? false /* "cheap-module-eval-source-map" */
@@ -620,15 +622,21 @@ webpackConfig = {
 
     // TODO: cleanStaleWebpackAssets isn't working, dist is full of old
     //       garbage that's never getting removed
-    new CleanWebpackPlugin(),
+    new CleanWebpackPlugin({ verbose: true, cleanStaleWebpackAssets: false }),
     // {verbose: false, cleanStaleWebpackAssets: false}
     new MiniCssExtractPlugin({
-      filename: isProduction ? "[name]-[hash].css" : "[name].css"
+      filename: isProduction ? "[name]-[hash].css" : "[name].css",
     }),
     // new ManifestPlugin({ writeToFileEmit: true }),
     new copyPlugin([{ from: "**/*", cache: true }], {
       logLevel: isProduction ? "warn" : "error",
-      ignore: [".DS_Store", "js/**/*", "sass/**/*", "fonts/**/*", "blocks/**/*"]
+      ignore: [
+        ".DS_Store",
+        "js/**/*",
+        "sass/**/*",
+        "fonts/**/*",
+        "blocks/**/*",
+      ],
     }),
 
     new ImageminPlugin({
@@ -637,8 +645,8 @@ webpackConfig = {
       // exclude: [/node_modules/],
       name: "[path][name].[ext]",
       imageminOptions: {
-        plugins: isProduction ? imageminpProdPlugins : imageminDevPlugins
-      }
+        plugins: isProduction ? imageminpProdPlugins : imageminDevPlugins,
+      },
     }),
 
     new DependencyManifestPlugin({ writeManifestFile: true }),
@@ -669,9 +677,9 @@ webpackConfig = {
             generateStatsFile: isProduction,
             openAnalyzer: false,
             reportFilename: `${siteDir}/webpack/stats/index.html`,
-            statsFilename: `${siteDir}/webpack/stats/stats.json`
-          })
-        ])
+            statsFilename: `${siteDir}/webpack/stats/stats.json`,
+          }),
+        ]),
     // : [])
   ],
   optimization: {
@@ -688,7 +696,7 @@ webpackConfig = {
     //   },
     //   minSize: 30000
     // }
-  }
+  },
 };
 
 module.exports = webpackConfig;
