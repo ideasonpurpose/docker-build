@@ -30,10 +30,10 @@ jobs:
     - name: Deploy $LATEST image to Docker Hub
       run: docker push ideasonpurpose/docker-build
       
-    - name: '[RELEASE] Tag image with release version'
+    - name: '[TAG] Tag image with version'
       if: startsWith( github.ref, 'refs/tags/')
-      run: docker tag ideasonpurpose/docker-build ideasonpurpose/docker-build:${GITHUB_REF/refs\/tags\/v/}
+      run: docker tag ideasonpurpose/docker-build ideasonpurpose/docker-build:${GITHUB_REF#refs/tags/v}
       
-    - name: '[RELEASE] Deploy release-tagged image to Docker Hub'
+    - name: '[TAG] Deploy version-tagged image to Docker Hub'
       if: startsWith( github.ref, 'refs/tags/')
-      run: docker push ideasonpurpose/docker-build:${GITHUB_REF/refs\/tags\/v/}
+      run: docker push ideasonpurpose/docker-build:${GITHUB_REF#refs/tags/v}
