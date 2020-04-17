@@ -23,13 +23,17 @@ jobs:
       with:
         path: node_modules
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
 
     - name: Cache /var/lib/docker
       uses: actions/cache@v1
       with:
         path: /var/lib/docker
         key: ${{ runner.os }}-Dockerfile
-    
+        restore-keys: |
+          ${{ runner.os }}-docker-
+
     - name: Log into Docker Hub
       run: docker login --username $DOCKER_USER --password $DOCKER_PASS
       
