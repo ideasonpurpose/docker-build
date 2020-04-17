@@ -428,7 +428,7 @@ webpackConfig = {
     // contentBase: "/usr/src/site",
     overlay: { warnings: true, errors: true },
     hot: true,
-    // writeToDisk: true,
+    writeToDisk: true,
     stats,
 
     // NOTE: trying to make injection conditional so wp-admin stops reloading
