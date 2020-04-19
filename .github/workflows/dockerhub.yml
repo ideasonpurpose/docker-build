@@ -1,39 +1,35 @@
-name: Push Images to Docker Hub
+# This action will push version-tagged and latest images to Docker Hub
+# It requires three secrets to be set:
+#   DOCKER_USER: The Docker Hub username
+#   DOCKER_PASS: The Docker Hub user's password
+#   DOCKER_NAME: The full image name as it appears on Docker Hub
+
+name: Push to Docker Hub
 
 on:
   push:
-    branches: [ master ]
     tags: ['v*'] 
 
 env: 
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+  DOCKER_NAME: ${{ secrets.DOCKER_NAME }}  
 jobs:
 
-  build:
+  Deploy:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Dump GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-
-    - name: Log into Docker Hub
-      run: docker login --username $DOCKER_USER --password $DOCKER_PASS
-      
     - name: Build image from Dockerfile
-      run: docker build . --tag ideasonpurpose/docker-build
+      run: docker build . --tag $DOCKER_NAME
     
-    - name: Deploy $LATEST image to Docker Hub
-      run: docker push ideasonpurpose/docker-build
-      
-    - name: '[TAG] Tag image with version'
-      if: startsWith( github.ref, 'refs/tags/')
-      run: docker tag ideasonpurpose/docker-build ideasonpurpose/docker-build:${GITHUB_REF#refs/tags/v}
-      
-    - name: '[TAG] Deploy version-tagged image to Docker Hub'
-      if: startsWith( github.ref, 'refs/tags/')
-      run: docker push ideasonpurpose/docker-build:${GITHUB_REF#refs/tags/v}
+    - name: 'Tag image with version'
+      run: docker tag $DOCKER_NAME ${DOCKER_NAME}:${GITHUB_REF#refs/tags/v}
+
+    - name: 'Deploy  to Docker Hub'
+      run: |
+        docker login --username $DOCKER_USER --password $DOCKER_PASS
+        docker push $DOCKER_NAME
+        docker push ${DOCKER_NAME}:${GITHUB_REF#refs/tags/v}
