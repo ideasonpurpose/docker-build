@@ -478,6 +478,8 @@ webpackConfig = {
           ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
           ignoreInitial: true,
           ignorePermissionErrors: true,
+          usePolling,
+          interval: pollInterval,
         })
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
@@ -504,8 +506,9 @@ webpackConfig = {
      *       TODO: Safe to remove?
      *       TODO: Test on vanilla Windows (should now work in WSL)
      */
-    watchOptions: {
-      poll: usePolling && 500,
+
+     watchOptions: {
+      poll: usePolling && pollInterval,
       ignored: ["node_modules", "vendor"],
     },
 
