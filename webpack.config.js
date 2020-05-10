@@ -444,8 +444,17 @@ webpackConfig = {
     // },
 
     before: function (app, server) {
-      // TODO: What is this and does it do anything? Leftover?
-      // app.all("/inform", () => false);
+      /**
+       * This might be one of the most annoying bits of code ever.
+       * Ubiquity Wi-fi hardware frequently spams the shit out of their
+       * networks, specifically requesting the `/inform` route from
+       * every device. Our office and my home network both have
+       * Ubiquity hardware, so dev servers were constantly responding
+       * to `/inform` requests with 404s, filling logs and cluttering
+       * terminals. So that's why this is here. I hate it.
+       */
+      app.all("/inform", () => false);
+
       /**
        * The "/webpack/reload" endpoint will trigger a full devServer refresh
        * See current Browsersync implementation here:
