@@ -123,12 +123,16 @@ if (!fs.existsSync(config.src)) {
  * `usePolling` is a placeholder, try and detect native Windows Docker mounts
  * since they don't support file-watching (no inotify events), if there's
  * something clean, use that instead. For now, this will force-enable polling.
+ *
+ * TODO: Why so much dancing around defaults when this could just inherit from default.config?
  */
-const usePolling = config.usePolling !== undefined ? !!config.usePolling : true;
-// TODO: When null-coalescing works:  `const usePolling = config.usePolling ?? true;`
+const usePolling = Boolean(config.usePolling);
+const pollInterval = parseInt(config.pollInterval) || 500;
 
-console.log("usePolling", usePolling);
-console.log("config.usePolling", config.usePolling);
+// console.log("usePolling", usePolling);
+// console.log("config.usePolling", config.usePolling);
+// console.log("pollInterval", pollInterval);
+// console.log("config.pollInterval", config.pollInterval);
 
 /**
  * Generate an entry object from config.entry.
@@ -622,8 +626,7 @@ webpackConfig = {
 
     // TODO: cleanStaleWebpackAssets isn't working, dist is full of old
     //       garbage that's never getting removed
-    new CleanWebpackPlugin({ verbose: true, cleanStaleWebpackAssets: false }),
-    // {verbose: false, cleanStaleWebpackAssets: false}
+    new CleanWebpackPlugin({ verbose: false, cleanStaleWebpackAssets: false }),
     new MiniCssExtractPlugin({
       filename: isProduction ? "[name]-[hash].css" : "[name].css",
     }),
