@@ -100,6 +100,12 @@ try {
 }
 
 /**
+ * This changes the reported port for websockets, so devserver updates
+ * work even if the docker listening port is changed via npm config.
+ */
+const sockPort = process.env.PORT || config.port;
+
+/**
  * Normalize paths relative to our webpack.config.js file
  *
  * If the `config.src` directory doesn't exist, bail out here
@@ -111,7 +117,7 @@ config.src = path.resolve("../site", config.src);
 config.dist = path.resolve("../site", config.dist);
 
 // TODO: Should we create these if they don't exist? Would help with spinning up
-//       a new evnironment. Maybe?
+//       a new environment. Maybe?
 if (!fs.existsSync(config.src)) {
   throw new Error(
     `src directory '${config.src}' ` +
@@ -431,6 +437,8 @@ webpackConfig = {
     host: "0.0.0.0",
     disableHostCheck: true,
     compress: false,
+    port: config.port,
+    sockPort,
     // contentBase: "/usr/src/site",
     overlay: { warnings: true, errors: true },
     hot: true,
@@ -507,7 +515,7 @@ webpackConfig = {
      *       TODO: Test on vanilla Windows (should now work in WSL)
      */
 
-     watchOptions: {
+    watchOptions: {
       poll: usePolling && pollInterval,
       ignored: ["node_modules", "vendor"],
     },

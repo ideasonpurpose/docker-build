@@ -43,10 +43,9 @@ const defaultConfig = {
   dist: "./dist",
   entry: ["./js/index.js"],
   publicPath: "/dist/",
-  sass: 'node-sass',
-  proxy: null // TODO this doesn't do much yet, make devServer condtional
+  sass: "node-sass",
+  port: 8080,
+  proxy: null, // TODO this doesn't do much yet, make devServer condtional
 };
 
 module.exports = defaultConfig;
-
-
