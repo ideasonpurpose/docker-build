@@ -11,6 +11,7 @@
   "scripts": {
     "analyze": "WEBPACK_BUNDLE_ANALYZER=true webpack",
     "postanalyze": "node explore.js",
+    "browsersync": "node browsersync.js",
     "build": "NODE_ENV=production webpack --progress --color --display-error-details",
     "postbuild": "npm run zip",
     "build:debug": "node --inspect-brk=0.0.0.0 node_modules/.bin/webpack",
@@ -18,17 +19,16 @@
     "devserver": "npm run start",
     "env": "env",
     "explore": "source-map-explorer",
+    "node-sass": "node-sass --include-path /usr/src/site/wp-content/themes/iop-njhi/src/sass /usr/src/site/wp-content/themes/iop-njhi/src/sass/main.scss",
     "preview": "node browsersync.js",
     "start": "webpack-dev-server",
     "start:debug": "node --inspect-brk=0.0.0.0 node_modules/.bin/webpack-dev-server",
-    "version": "version-everything && git add -u",
+    "version": "version-everything && auto-changelog && git add -u",
+    "watch": "webpack --progress --profile --watch --color --display-error-details",
     "webpack": "webpack --progress",
     "webpack:profile": "webpack --profile --progress --json > /usr/src/site/webpack/stats.json",
-    "watch": "webpack --progress --profile --watch --color --display-error-details",
-    "browsersync": "node browsersync.js",
     "zip": "node zip.js",
-    "zip:debug": "node --inspect-brk=0.0.0.0 zip.js",
-    "node-sass": "node-sass --include-path /usr/src/site/wp-content/themes/iop-njhi/src/sass /usr/src/site/wp-content/themes/iop-njhi/src/sass/main.scss"
+    "zip:debug": "node --inspect-brk=0.0.0.0 zip.js"
   },
   "dependencies": {
     "@babel/core": "^7.9.6",
@@ -37,6 +37,7 @@
     "@babel/preset-env": "^7.9.6",
     "@babel/preset-react": "^7.9.4",
     "archiver": "^4.0.1",
+    "auto-changelog": "^2.0.0",
     "autoprefixer": "^9.7.6",
     "babel-loader": "^8.1.0",
     "body-parser": "^1.19.0",
@@ -86,6 +87,9 @@
     "webpack-dev-middleware": "^3.7.2",
     "webpack-dev-server": "^3.11.0",
     "webpack-hot-middleware": "^2.25.0"
+  },
+  "auto-changelog": {
+    "package": true
   },
   "version-everything": {
     "files": [
