@@ -6,6 +6,9 @@ LABEL version="0.4.5"
 ENV TERM xterm-256color
 ENV npm_config_cache /usr/src/site/webpack/.cache
 
+# Disable npm update checks. Not just npm, and no idea where this is documented, but it works
+ENV NO_UPDATE_NOTIFIER true
+
 WORKDIR /usr/src/tools
 
 RUN apt-get update -qq \
@@ -35,7 +38,6 @@ RUN apt-get update -qq \
 
 # Set node cache to use the persistent volume
 # RUN npm config set cache /usr/src/site/webpack/.cache
-
 
 COPY package*.json ./
 RUN npm clean-install
