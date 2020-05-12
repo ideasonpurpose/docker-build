@@ -442,7 +442,7 @@ webpackConfig = {
     // contentBase: "/usr/src/site",
     overlay: { warnings: true, errors: true },
     hot: true,
-    writeToDisk: true,
+    writeToDisk: (filePath) => !/\.hot-update\.(js|json)$/.test(filePath),  // write everything but hot-update fragments
     stats,
 
     // NOTE: trying to make injection conditional so wp-admin stops reloading
