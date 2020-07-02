@@ -323,8 +323,8 @@ webpackConfig = {
             loader: "css-loader",
             options: {
               sourceMap: false,
-              url: !isProduction,
-              import: !isProduction,
+              // url: true,
+              import: false,
               // url: (url, resourcePath) => {
               //   console.log('### CSS-LOADER: url', url, resourcePath);
               //   debugger;
