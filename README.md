@@ -149,10 +149,10 @@ if (some.condition) {
 
 ### Local Development
 
-To iterate locally, build the image using the same name as the Docker Hub remote. Docker will use the local copy.
+To iterate locally, build the image using the same name as the Docker Hub remote. Docker will use the local copy. Specify `dev` if you're using using versions.
 
 ```sh
-$ docker build . --tag ideasonpurpose/docker-build
+$ docker build . --tag ideasonpurpose/docker-build:dev
 ```
 
 [sass-loader]: https://webpack.js.org/loaders/sass-loader/
