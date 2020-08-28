@@ -672,7 +672,10 @@ webpackConfig = {
       },
     }),
 
-    new DependencyManifestPlugin({ writeManifestFile: true }),
+    new DependencyManifestPlugin({
+      writeManifestFile: true,
+      manifestFile: config.manifestFile,
+    }),
     // new BrowserSyncPlugin(
     //   {
     //     host: "localhost",
