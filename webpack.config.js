@@ -131,9 +131,14 @@ if (!fs.existsSync(config.src)) {
  * something clean, use that instead. For now, this will force-enable polling.
  *
  * TODO: Why so much dancing around defaults when this could just inherit from default.config?
+ *
+ * TODO: usePolling should accept a boolean or an integer > 400
  */
 const usePolling = Boolean(config.usePolling);
-const pollInterval = parseInt(config.pollInterval) || 500;
+const pollInterval = Math.max(
+  parseInt(config.pollInterval, 10) || parseInt(config.usePolling, 10) || 400,
+  400
+);
 
 // console.log("usePolling", usePolling);
 // console.log("config.usePolling", config.usePolling);
