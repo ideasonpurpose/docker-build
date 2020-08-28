@@ -188,7 +188,7 @@ if (!validSassImplementations.includes(config.sass)) {
   config.sass = "node-sass";
 }
 
-const imageminpProdPlugins = [
+const imageminProdPlugins = [
   ["gifsicle", { optimizationLevel: 3 }],
   [
     "pngquant",
@@ -458,7 +458,7 @@ webpackConfig = {
 
     before: function (app, server) {
       /**
-       * This might be one of the most annoying bits of code ever.
+       * The `/inform` route is an annoying bit of code. Here's why:
        * Ubiquity Wi-fi hardware frequently spams the shit out of their
        * networks, specifically requesting the `/inform` route from
        * every device. Our office and my home network both have
@@ -485,6 +485,7 @@ webpackConfig = {
       /**
        * Watch PHP files and reload everything on change
        * TODO: maybe this could move outside the devserver? Would it still be called?`
+       * TODO: If this is only for proxied projects, it should be more than just php files?
        */
       chokidar
         .watch([path.resolve(config.src, "../**/*.php")], {
@@ -673,7 +674,7 @@ webpackConfig = {
       // exclude: [/node_modules/],
       name: "[path][name].[ext]",
       imageminOptions: {
-        plugins: isProduction ? imageminpProdPlugins : imageminDevPlugins,
+        plugins: isProduction ? imageminProdPlugins : imageminDevPlugins,
       },
     }),
 

@@ -152,10 +152,15 @@ if (some.condition) {
 To iterate locally, build the image using the same name as the Docker Hub remote. Docker will use the local copy. Specify `dev` if you're using using versions.
 
 ```sh
-$ docker build . --tag ideasonpurpose/docker-build:dev
+docker build . --tag ideasonpurpose/docker-build:dev
 ```
+
+## Related Projects
+
+This toolset is installed with our [Docker-based WordPress development environments][docker-wordpress-dev].
 
 [sass-loader]: https://webpack.js.org/loaders/sass-loader/
 [libsass]: https://github.com/sass/node-sass
 [dart-sass]: https://github.com/sass/dart-sass
 [cosmiconfig]: https://www.npmjs.com/package/cosmiconfig
+[docker-wordpress-dev]: https://github.com/ideasonpurpose/docker-wordpress-dev
