@@ -13,6 +13,7 @@ const { cosmiconfigSync } = require("cosmiconfig");
 const chalk = require("chalk");
 
 const chokidar = require("chokidar");
+const devserverProxy = require("./lib/devserver-proxy");
 
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -83,6 +84,7 @@ const stats = {
 //   console.log("Error caught?");
 // });
 
+// TODO: `siteDir` is basically unused, it points to `/usr/src/site
 const siteDir = path.resolve(__dirname, "../site");
 
 const explorerSync = cosmiconfigSync("ideasonpurpose");
@@ -92,11 +94,13 @@ const defaultConfig = require("./default.config.js");
 
 const config = { ...defaultConfig, ...configFile.config };
 
-try {
-  config.proxyUrl = new URL(config.proxy);
-} catch (err) {
-  console.log("proxy couldn't be parsed", err);
-  config.proxyUrl = {};
+config.proxyUrl = {};
+if (config.proxy) {
+  try {
+    config.proxyUrl = new URL(config.proxy);
+  } catch (err) {
+    console.log("config.proxy couldn't be parsed", err);
+  }
 }
 
 /**
@@ -411,8 +415,8 @@ webpackConfig = {
   resolve: {
     // symlinks: false, // attempted fix for `Cannot assign to read only property 'exports' of object` (module.exports)-- didn't work
     modules: [
-      path.resolve("../tools/node_modules"),
       path.resolve("../site/node_modules"),
+      path.resolve("../tools/node_modules"),
     ],
   },
 
@@ -444,7 +448,8 @@ webpackConfig = {
     compress: false,
     port: config.port,
     sockPort,
-    // contentBase: "/usr/src/site",
+    // TODO: Should contentBase be `false` when there's a proxy?
+    contentBase: path.join("/usr/src/site/", config.contentBase),
     overlay: { warnings: true, errors: true },
     hot: true,
     writeToDisk: (filePath) => !/\.hot-update\.(js|json)$/.test(filePath), // write everything but hot-update fragments
@@ -488,13 +493,19 @@ webpackConfig = {
        * TODO: If this is only for proxied projects, it should be more than just php files?
        */
       chokidar
-        .watch([path.resolve(config.src, "../**/*.php")], {
-          ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
-          ignoreInitial: true,
-          ignorePermissionErrors: true,
-          usePolling,
-          interval: pollInterval,
-        })
+        .watch(
+          [
+            path.resolve(config.src, "../**/*.php"), // WordPress
+            path.resolve(config.src, `../${config.contentBase}/*.html`), // Jekyll
+          ],
+          {
+            ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
+            ignoreInitial: true,
+            ignorePermissionErrors: true,
+            usePolling,
+            interval: pollInterval,
+          }
+        )
         .on("all", (event, changedPath) => {
           const basePath = path.resolve(config.src, "..");
           const relPath = path.relative(basePath, changedPath);

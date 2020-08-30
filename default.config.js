@@ -14,6 +14,8 @@
  *
  * @property {string} publicPath - The base path for all assets. Passed directly to Webpack
  *
+ * @property {string} contentBase - Directory of static content to be servde by Webpack DevServer
+ *
  * @property {string} manifestFile - Filepath location of the dependency-manifest JSON file
  *
  * @property {boolean|null|string} proxy - TBD will be used to configure the proxy <br>
@@ -46,10 +48,11 @@ const defaultConfig = {
   dist: "./dist",
   entry: ["./js/index.js"],
   publicPath: "/dist/",
+  contentBase: "/dist/",  // TODO: Should this be false?
   manifestFile: "./dependency-manifest.json",
   sass: "node-sass",
   port: 8080,
-  proxy: null, // TODO this doesn't do much yet, make devServer condtional
+  proxy: null, // TODO this doesn't do much yet, make devServer conditional
 };
 
 module.exports = defaultConfig;
