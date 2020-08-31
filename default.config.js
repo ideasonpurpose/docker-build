@@ -52,7 +52,8 @@ const defaultConfig = {
   manifestFile: "./dependency-manifest.json",
   sass: "node-sass",
   port: 8080,
-  proxy: null, // TODO this doesn't do much yet, make devServer conditional
+  proxy: null, // TODO this doesn't do much yet, make devServer conditional,
+  devTool: false // TEMPORARY, REMOVE AFTER TESTING
 };
 
 module.exports = defaultConfig;

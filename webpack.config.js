@@ -330,7 +330,8 @@ webpackConfig = {
           {
             loader: "css-loader",
             options: {
-              sourceMap: false,
+              sourceMap: true,
+
               // url: true,
               import: false,
               // url: (url, resourcePath) => {
@@ -348,7 +349,7 @@ webpackConfig = {
           {
             loader: "postcss-loader",
             options: {
-              sourceMap: false,
+              sourceMap: true,
               plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])],
             },
           },
@@ -357,11 +358,10 @@ webpackConfig = {
             options: {
               implementation: require(config.sass),
               webpackImporter: true,
+              sourceMap: true,
               sassOptions: {
-                // includePaths: ["node_modules"],
                 includePaths: [config.src],
                 outputStyle: "expanded",
-                sourceMap: false,
                 ...(config.sass === "node-sass"
                   ? { sourceComments: true }
                   : {}),
@@ -548,7 +548,7 @@ webpackConfig = {
   },
 
   devtool: !isProduction
-    ? false /* "cheap-module-eval-source-map" */
+    ? config.devTool
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
 
   infrastructureLogging: {
