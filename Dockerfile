@@ -1,6 +1,6 @@
 FROM node:12.18.3-slim
 
-LABEL version="0.5.1"
+LABEL version="0.6.0"
 
 # enable color in the terminal
 ENV TERM xterm-256color
