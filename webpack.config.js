@@ -148,6 +148,10 @@ const pollInterval = Math.max(
 // console.log("pollInterval", pollInterval);
 // console.log("config.pollInterval", config.pollInterval);
 
+const devtool = !isProduction
+  ? config.devtool
+  : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map";
+
 /**
  * Generate an entry object from config.entry.
  * Output names will be based on the source file's basename.
@@ -330,26 +334,13 @@ webpackConfig = {
           {
             loader: "css-loader",
             options: {
-              sourceMap: true,
-
-              // url: true,
-              import: false,
-              // url: (url, resourcePath) => {
-              //   console.log('### CSS-LOADER: url', url, resourcePath);
-              //   debugger;
-              //   return true;
-              // },
-              // // import: false, // all @import should already have been handled by Sass or PostCSS
-              // import: (parsedImport, resourcePath) => {
-              //   console.log('### CSS-LOADER: import', parsedImport, resourcePath);
-              //   return true;
-              // }
+              import: false, // imports already handled by Sass or PostCSS
             },
           },
           {
             loader: "postcss-loader",
             options: {
-              sourceMap: true,
+              sourceMap: !!devtool,
               plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])],
             },
           },
@@ -358,7 +349,6 @@ webpackConfig = {
             options: {
               implementation: require(config.sass),
               webpackImporter: true,
-              sourceMap: true,
               sassOptions: {
                 includePaths: [config.src],
                 outputStyle: "expanded",
@@ -547,9 +537,7 @@ webpackConfig = {
     hints: isProduction ? "warning" : false,
   },
 
-  devtool: !isProduction
-    ? config.devTool
-    : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
+  devtool: config.devtool,
 
   infrastructureLogging: {
     level: isProduction ? "warn" : "error",
