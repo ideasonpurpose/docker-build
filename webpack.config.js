@@ -18,7 +18,6 @@ const devserverProxy = require("./lib/devserver-proxy");
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-// const ManifestPlugin = require("webpack-manifest-plugin");
 
 const HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
 
@@ -547,9 +546,14 @@ webpackConfig = {
   performance: {
     hints: isProduction ? "warning" : false,
   },
+
   devtool: !isProduction
     ? false /* "cheap-module-eval-source-map" */
     : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map",
+
+  infrastructureLogging: {
+    level: isProduction ? "warn" : "error",
+  },
 
   plugins: [
     // new CaseSensitivePathsPlugin({debug: true}),
@@ -571,15 +575,17 @@ webpackConfig = {
     new MiniCssExtractPlugin({
       filename: isProduction ? "[name]-[hash].css" : "[name].css",
     }),
-    // new ManifestPlugin({ writeToFileEmit: true }),
-    new copyPlugin([{ from: "**/*", cache: true }], {
-      logLevel: isProduction ? "warn" : "error",
-      ignore: [
-        ".DS_Store",
-        "js/**/*",
-        "sass/**/*",
-        "fonts/**/*",
-        "blocks/**/*",
+
+    new copyPlugin({
+      patterns: [
+        {
+          from: "**/*",
+          globOptions: {
+            dot: true,
+            ignore: ["**/{blocks,fonts,js,sass}/**"],
+          },
+          cacheTransform: true,
+        },
       ],
     }),
 
