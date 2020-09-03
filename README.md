@@ -65,6 +65,21 @@ module.exports = {
 };
 ```
 
+### Jekyll config
+
+For Jekyll projects, the config will look something like this:
+
+```js
+module.exports = {
+  src: `./_assets/`,
+  dist: `./dist/`,
+  entry: ["./js/main.js"],
+  publicPath: `/dist/`,
+  contentBase: "/_site/", // Location webpack devServer will serve static files from
+  manifestFile: "../_data/dependency-manifest.json", // Write the dependency-manifest into _data
+};
+```
+
 ## Running a build from Docker
 
 ### Example runs
@@ -107,7 +122,7 @@ Runs a webpack production build then starts the Webpack Bundle Analyzer. Connect
 
 #### `NAME`
 
-The name of the project, ideaslly the `name` property from package.json. This should match the directory containing the project files.
+The name of the project, ideally the `name` property from package.json. This should match the directory containing the project files.
 
 ### Volumes
 
@@ -131,6 +146,7 @@ Requesting `/webpack/reload` from the devserver will will trigger a full reload 
 The config object can include additional sources/entry-points, (todo: name this better) include an array of relative source files like this:
 
 ```js
+
 ```
 
 ### Code Splitting and deferred loading
