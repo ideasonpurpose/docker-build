@@ -564,17 +564,29 @@ webpackConfig = {
       filename: isProduction ? "[name]-[hash].css" : "[name].css",
     }),
 
-    new copyPlugin({
-      patterns: [
-        {
-          from: "**/*",
-          globOptions: {
-            dot: true,
-            ignore: ["**/{blocks,fonts,js,sass}/**"],
-          },
-          cacheTransform: true,
-        },
-      ],
+    /**
+     * This config is for webpack-copy-plugin@6.1.0 running under webpack@5-beta, which isn't released yet.
+     * When we upgrade webpack, switch back to this config.
+     */
+    // new copyPlugin({
+    //   patterns: [
+    //     {
+    //       from: "**/*",
+    //       globOptions: {
+    //         dot: true,
+    //         ignore: ["**/{blocks,fonts,js,sass}/**"],
+    //       },
+    //       cacheTransform: true,
+    //     },
+    //   ],
+    // }),
+
+    /**
+     * This config is for webpack-copy-plugin@5 running under webpack@4
+     */
+    new copyPlugin([{ from: "**/*", cache: true }], {
+      logLevel: isProduction ? "warn" : "error",
+      ignore: ["{blocks,fonts,js,sass}/**"],
     }),
 
     new ImageminPlugin({
