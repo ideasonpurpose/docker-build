@@ -279,6 +279,28 @@ class BrowsersyncPlugin {
   }
 }
 
+/**
+ * Simple plugin for printing some text after compilation stats are displayed
+ */
+class afterDoneReporterPlugin {
+  constructor(options = {}) {
+    const defaults = {
+      prefix: `🟢${chalk.gray("(iop)")}:`,
+      message: `Dev site ${chalk.blue.bold(`http://localhost:${sockPort}`)}`,
+    };
+    this.config = { ...defaults, ...options };
+    this.name = "IOP Reporter Plugin";
+  }
+
+  apply(compiler) {
+    compiler.hooks.done.tapPromise(this.name, async (stats) => {
+      const logger = stats.compilation.getLogger(this.name);
+      logger.info("hello from the real logger");
+      setTimeout(() => console.log(this.config.prefix, this.config.message));
+    });
+  }
+}
+
 webpackConfig = {
   module: {
     rules: [
@@ -600,6 +622,8 @@ webpackConfig = {
       writeManifestFile: true,
       manifestFile: config.manifestFile,
     }),
+
+    new afterDoneReporterPlugin(),
     // new BrowserSyncPlugin(
     //   {
     //     host: "localhost",
