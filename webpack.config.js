@@ -426,10 +426,6 @@ webpackConfig = {
     publicPath: config.publicPath,
   },
 
-  // TODO: Add contentBase property to the devServer object.
-  //  https://webpack.js.org/configuration/dev-server/#devservercontentbase
-  // Should fix this path:
-  //  >  ℹ ｢wds｣: Content not from webpack is served from /usr/src/tools
   devServer: {
     index: "", // enable root proxying
     host: "0.0.0.0",
@@ -437,6 +433,7 @@ webpackConfig = {
     compress: false,
     port: config.port,
     sockPort,
+    public: `localhost:${sockPort}`,
     // TODO: Should contentBase be `false` when there's a proxy?
     contentBase: path.join("/usr/src/site/", config.contentBase),
     overlay: { warnings: true, errors: true },
