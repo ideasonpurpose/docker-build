@@ -15,16 +15,14 @@ const chalk = require("chalk");
 const chokidar = require("chokidar");
 const devserverProxy = require("./lib/devserver-proxy");
 
-const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-
-const HardSourceWebpackPlugin = require("hard-source-webpack-plugin");
 
 const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const DependencyManifestPlugin = require("./lib/DependencyManifestPlugin.js");
+// const AfterEmitReporterPlugin = require("./lib/AfterEmitReporterPlugin.js");
 
 const ImageminPlugin = require("imagemin-webpack");
 
@@ -34,8 +32,6 @@ const cssnano = require("cssnano");
 // TODO: Not working with the devserver proxy, lauches ok but throws:
 //      'socket hang up' ECONNRESET errors on every request
 // const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
-
-const prettyHrtime = require("pretty-hrtime");
 
 /**
  * Force mode: production when running the analyzer
@@ -69,20 +65,6 @@ const stats = {
   warnings: true,
 };
 
-/**
- * Attempt to catch the ECONNRESET (Error: socket hang up) errors
- * which might be slowing WordPress admin stuff to a crawl
- *
- * refs:
- *  https://stackoverflow.com/questions/17245881/node-js-econnreset
- *  https://github.com/webpack/webpack-dev-server/issues/1642
- */
-// process.on("uncaughtException", (err, origin) => {
-//   console.log(err.msg);
-//   console.err(err.stack);
-//   console.log("Error caught?");
-// });
-
 // TODO: `siteDir` is basically unused, it points to `/usr/src/site
 const siteDir = path.resolve(__dirname, "../site");
 
@@ -106,7 +88,7 @@ if (config.proxy) {
  * This changes the reported port for websockets, so devserver updates
  * work even if the docker listening port is changed via npm config.
  */
-const sockPort = process.env.PORT || config.port;
+const sockPort = parseInt(process.env.PORT || config.port);
 
 /**
  * Normalize paths relative to our webpack.config.js file
@@ -134,19 +116,12 @@ if (!fs.existsSync(config.src)) {
  * something clean, use that instead. For now, this will force-enable polling.
  *
  * TODO: Why so much dancing around defaults when this could just inherit from default.config?
- *
- * TODO: usePolling should accept a boolean or an integer > 400
  */
 const usePolling = Boolean(config.usePolling);
 const pollInterval = Math.max(
   parseInt(config.pollInterval, 10) || parseInt(config.usePolling, 10) || 400,
   400
 );
-
-// console.log("usePolling", usePolling);
-// console.log("config.usePolling", config.usePolling);
-// console.log("pollInterval", pollInterval);
-// console.log("config.pollInterval", config.pollInterval);
 
 const devtool = !isProduction
   ? config.devtool
@@ -257,14 +232,12 @@ class BrowsersyncPlugin {
       () => (this.isWatch = true)
     );
 
-    console.log(
-      chalk.magenta(">>>>>>>>>>> in browserSyncPlugin Class, apply method")
-    );
+    console.log(chalk.magenta(">>>> in browserSyncPlugin Class, apply method"));
     compiler.hooks.emit.tapAsync(
       "browsersyncPlugin",
       (compilation, callback) => {
         console.log(
-          chalk.magenta(">>>>>>>>>>> in compiler.hooks.emit"),
+          chalk.magenta(">>>> in compiler.hooks.emit"),
           Object.keys(compilation.assets)
         );
         Object.keys(compilation.assets)
@@ -310,7 +283,6 @@ webpackConfig = {
         use: {
           loader: "babel-loader",
           options: {
-            // ...(!isProduction ? { exclude: /(node_modules)/ } : {}),
             exclude: /node_modules/,
             cacheDirectory: !isProduction,
             sourceType: "unambiguous",
@@ -340,15 +312,6 @@ webpackConfig = {
       {
         test: /\.(scss|css)$/,
         use: [
-          // TODO: enable watching and extracting css for an alternative to WebPack CSS loading
-          // isProduction || writeFiles
-          //   ? MiniCssExtractPlugin.loader
-          //   : "style-loader",
-          /**
-           *  TODO: Re-enable CSS source maps when MiniCssExtractPlugin#481 is released
-           *        For now, sourceMaps are broken with 0.9.0
-           *        https://github.com/webpack-contrib/mini-css-extract-plugin/pull/481
-           */
           {
             loader: MiniCssExtractPlugin.loader,
             options: { hmr: !isProduction },
@@ -424,7 +387,6 @@ webpackConfig = {
   context: path.resolve(config.src),
 
   resolve: {
-    // symlinks: false, // attempted fix for `Cannot assign to read only property 'exports' of object` (module.exports)-- didn't work
     modules: [
       path.resolve("../site/node_modules"),
       path.resolve("../tools/node_modules"),
@@ -532,7 +494,7 @@ webpackConfig = {
      * TODO: Poll options were enabled as a workaround for Docker-win volume inotify
      *       issues. Looking to make this conditional...
      *       Maybe defined `isWindows` or `hasiNotify` for assigning a value
-     *       Placehodler defined at the top of the file.
+     *       Placeholder defined at the top of the file.
      *       For now, `usePolling` is a boolean (set to true)
      *       ref: https://github.com/docker/for-win/issues/56
      *            https://www.npmjs.com/package/is-windows
@@ -563,21 +525,12 @@ webpackConfig = {
   },
 
   plugins: [
-    // new CaseSensitivePathsPlugin({debug: true}),
 
     // ...(!isProduction ? [new webpack.HotModuleReplacementPlugin()] : []),
     // new webpack.debug.ProfilingPlugin({
     //   outputPath: `${siteDir}/webpack/events.json`
     // }),
 
-    // new HardSourceWebpackPlugin(),
-
-    // TODO: Remove this for production?
-    // ...(isProduction ? [] : [new webpack.HotModuleReplacementPlugin()]),
-    // new webpack.HotModuleReplacementPlugin(),
-
-    // TODO: cleanStaleWebpackAssets isn't working, dist is full of old
-    //       garbage that's never getting removed
     new CleanWebpackPlugin({ verbose: false, cleanStaleWebpackAssets: false }),
     new MiniCssExtractPlugin({
       filename: isProduction ? "[name]-[hash].css" : "[name].css",
