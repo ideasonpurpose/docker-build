@@ -47,7 +47,9 @@ Specify the Sass implementation to use. Used by [Sass-loader][]. Supports `node-
 
 When set, Webpack's devserver will proxy this server, replacing requested assets as appropriate.
 
-<!-- TODO: Defaults? Options? -->
+#### `transpileDependencies` (optional)
+
+A list NPM modules which should be transpiled by babel. Many useful packages on NPM ship es6 code which crashes on older browsers. List those modules here so they can be included in the transpilation pipeline.
 
 ### WordPress config
 

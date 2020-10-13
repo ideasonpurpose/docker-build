@@ -22,9 +22,14 @@
  *      TODO: This should be automatic, maybe valid entries are: true, false, null, string (a valid url)?
  *
  * @property {('sass'|'node-sass'|'dart-sass')} [sass=node-sass] - The Sass implementation to use<br>
-        Supports Node-sass and Dart-Sass. 'dart-sass' is an alias for 'sass'
+ *      Supports Node-sass and Dart-Sass. 'dart-sass' is an alias for 'sass'
  *      {@link https://github.com/sass/node-sass|Node-sass (LibSass)}
  *      {@link https://github.com/sass/dart-sass|Dart-Sass (canonical Sass)}
+ *
+ * @property {array|string} transpileDependencies - List dependencies fto be transpiled by Babel.
+ *      Based on the setting in Vue. Two modules, ansi-regex and normalize-url, are included by
+ *      default since they're part of webpack DevServer and have been known to cause issues.
+ *      {@link https://cli.vuejs.org/config/#transpiledependencies| }
  *
  * @example <caption>defaultConfig.entry examples</caption>
  * // A setting like this:
@@ -52,6 +57,7 @@ const defaultConfig = {
   manifestFile: "./dependency-manifest.json",
   sass: "node-sass",
   port: 8080,
+  transpileDependencies: ["ansi-regex", "normalize-url"],
   proxy: null, // TODO this doesn't do much yet, make devServer conditional,
   devtool: false // TEMPORARY, REMOVE AFTER TESTING
 };

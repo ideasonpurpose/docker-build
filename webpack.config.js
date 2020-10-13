@@ -85,6 +85,20 @@ if (config.proxy) {
 }
 
 /**
+ * Merge transpileDependency arrays
+ */
+if (configFile.config.transpileDependencies) {
+  const configDeps =
+    typeof configFile.config.transpileDependencies === "string"
+      ? [configFile.config.transpileDependencies]
+      : configFile.config.transpileDependencies;
+  config.transpileDependencies = [
+    ...defaultConfig.transpileDependencies,
+    ...configDeps,
+  ];
+}
+console.log("transpileDeps", config.transpileDependencies);
+/**
  * This changes the reported port for websockets, so devserver updates
  * work even if the docker listening port is changed via npm config.
  */
@@ -278,12 +292,22 @@ webpackConfig = {
   module: {
     rules: [
       {
-        test: /\.js$/,
-        include: path.resolve(config.src),
+        test: /\.(js|jsx|mjs)$/,
+        include: [
+          path.resolve(config.src),
+          path.resolve("../tools/node_modules"),
+          path.resolve("../site/node_modules"),
+        ],
+        exclude: function (module) {
+          const moduleRegex = new RegExp(
+            `node_modules/(${config.transpileDependencies.join("|")})`
+          );
+          return /node_modules/.test(module) && !moduleRegex.test(module);
+        },
+
         use: {
           loader: "babel-loader",
           options: {
-            exclude: /node_modules/,
             cacheDirectory: !isProduction,
             sourceType: "unambiguous",
             plugins: [
@@ -388,8 +412,8 @@ webpackConfig = {
 
   resolve: {
     modules: [
-      path.resolve("../site/node_modules"),
       path.resolve("../tools/node_modules"),
+      path.resolve("../site/node_modules"),
     ],
   },
 
@@ -525,7 +549,6 @@ webpackConfig = {
   },
 
   plugins: [
-
     // ...(!isProduction ? [new webpack.HotModuleReplacementPlugin()] : []),
     // new webpack.debug.ProfilingPlugin({
     //   outputPath: `${siteDir}/webpack/events.json`
