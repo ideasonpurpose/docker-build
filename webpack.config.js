@@ -97,7 +97,7 @@ if (configFile.config.transpileDependencies) {
     ...configDeps,
   ];
 }
-console.log("transpileDeps", config.transpileDependencies);
+
 /**
  * This changes the reported port for websockets, so devserver updates
  * work even if the docker listening port is changed via npm config.
@@ -336,10 +336,7 @@ webpackConfig = {
       {
         test: /\.(scss|css)$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-            options: { hmr: !isProduction },
-          },
+          { loader: MiniCssExtractPlugin.loader },
           {
             loader: "css-loader",
             options: {
@@ -350,7 +347,9 @@ webpackConfig = {
             loader: "postcss-loader",
             options: {
               sourceMap: !!devtool,
-              plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])],
+              postcssOptions: {
+                plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])],
+              },
             },
           },
           {
