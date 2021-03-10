@@ -196,7 +196,7 @@ const stats = {
   assets: true,
   builtAt: true,
   cached: false,
-  children: true,
+  children: false, // Adds a bunch of blank lines to stats output
   chunkGroups: false,
   chunkModules: false,
   chunkOrigins: false,
