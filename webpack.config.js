@@ -1,4 +1,3 @@
-// TODO: Try out HTML-wbpack-plugin with dual outputs (head and footer)
 // TODO: Recognize project types and adjust output? WordPress? Jekyll?
 const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
 const smp = new SpeedMeasurePlugin({ granularLoaderData: true });
@@ -16,64 +15,40 @@ const chokidar = require("chokidar");
 const devserverProxy = require("./lib/devserver-proxy");
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+// const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 const copyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const DependencyManifestPlugin = require("./lib/DependencyManifestPlugin.js");
-// const AfterEmitReporterPlugin = require("./lib/AfterEmitReporterPlugin.js");
+const AfterDoneReporterPlugin = require("./lib/AfterDoneReporterPlugin");
+const ImageminPlugins = require("./lib/ImageminPlugins.js");
 
-const ImageminPlugin = require("imagemin-webpack");
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 
 const autoprefixer = require("autoprefixer");
 const cssnano = require("cssnano");
 
-// TODO: Not working with the devserver proxy, lauches ok but throws:
+// TODO: Not working with the devserver proxy, launches ok but throws:
 //      'socket hang up' ECONNRESET errors on every request
 // const BrowserSyncPlugin = require("browser-sync-webpack-plugin");
 
 /**
- * Force mode: production when running the analyzer
+ * Force `mode: production` when running the analyzer
  */
 if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-const stats = {
-  all: false,
-  assets: true,
-  builtAt: true,
-  cached: false,
-  children: true,
-  chunks: false,
-  chunkGroups: false,
-  chunkModules: false,
-  chunkOrigins: false,
-  // chunkRelations: true,
-  colors: true,
-  context: "/usr/src/site",
-  depth: true,
-  env: true,
-  errors: true,
-  errorDetails: true,
-  // log: "verbose",
-  logging: false,
-  outputPath: true,
-  source: true,
-  timings: true,
-  warnings: true,
-};
-
 // TODO: `siteDir` is basically unused, it points to `/usr/src/site
-const siteDir = path.resolve(__dirname, "../site");
-
-const explorerSync = cosmiconfigSync("ideasonpurpose");
-const configFile = explorerSync.search(siteDir);
-
 const defaultConfig = require("./default.config.js");
 
+const siteDir = path.resolve(__dirname, "../site");
+const explorerSync = cosmiconfigSync("ideasonpurpose");
+const configFile = explorerSync.search(siteDir) || { config: {} };
+
 const config = { ...defaultConfig, ...configFile.config };
+const projectDir = path.resolve(siteDir, config.src, "../");
 
 config.proxyUrl = {};
 if (config.proxy) {
@@ -145,7 +120,7 @@ const devtool = !isProduction
  * Generate an entry object from config.entry.
  * Output names will be based on the source file's basename.
  *
- * Config.entry should preferrably be an array, but strings or objects
+ * Config.entry should preferably be an array, but strings or objects
  * will also work. Strings will be treated as a single-item array. Arrays
  * be parsed into an object, objects (or whatever) will be passed through.
  *
@@ -158,7 +133,7 @@ const devtool = !isProduction
  * A string will be wrapped in an array:
  *   "./js/main.js"  =>  [ "./js/main.js" ]
  *
- * Objects pass stright through
+ * Objects pass straight through
  *   { app: "./js/main.js" }
  *
  * Overlapping basenames will be joined into a single entrypoint
@@ -181,58 +156,8 @@ config.sass = config.sass.toString().toLowerCase();
 config.sass = config.sass === "dart-sass" ? "sass" : config.sass; // make 'dart-sass' an allas for 'sass'
 const validSassImplementations = ["node-sass", "sass"];
 if (!validSassImplementations.includes(config.sass)) {
-  config.sass = "node-sass";
+  config.sass = "sass";
 }
-
-const imageminProdPlugins = [
-  ["gifsicle", { optimizationLevel: 3 }],
-  [
-    "pngquant",
-    {
-      strip: true,
-      dithering: 0.3,
-      quality: [0.5, 0.8],
-      verbose: true,
-    },
-  ],
-  ["mozjpeg", { quality: 80, progressive: true }],
-  [
-    "svgo",
-    {
-      floatPrecision: 3, // https://github.com/svg/svgo/issues/171#issuecomment-235605112
-      plugins: [
-        // {mergePaths: true},
-        { cleanupIDs: false },
-        // { convertTransform: true }, // default?
-        // { removeTitle: true },
-        { removeViewBox: false },
-        // { removeDimensions: true },
-        { sortAttrs: true },
-      ],
-    },
-  ],
-];
-
-const imageminDevPlugins = [
-  ["gifsicle", { optimizationLevel: 1 }],
-  ["optipng", { optimizationLevel: 0 }],
-  ["jpegtran", { progressive: true }],
-  [
-    "svgo",
-    {
-      js2svg: { pretty: true },
-      floatPrecision: 3,
-      plugins: [
-        { cleanupIDs: false },
-        // { convertTransform: true }, // default
-        // { removeTitle: true },  //default?
-        { removeViewBox: false },
-        // { removeDimensions: true },
-        { sortAttrs: true },
-      ],
-    },
-  ],
-];
 
 class BrowsersyncPlugin {
   constructor(opts1, opts2) {
@@ -266,27 +191,32 @@ class BrowsersyncPlugin {
   }
 }
 
-/**
- * Simple plugin for printing some text after compilation stats are displayed
- */
-class afterDoneReporterPlugin {
-  constructor(options = {}) {
-    const defaults = {
-      prefix: `🟢${chalk.gray("(iop)")}:`,
-      message: `Dev site ${chalk.blue.bold(`http://localhost:${sockPort}`)}`,
-    };
-    this.config = { ...defaults, ...options };
-    this.name = "IOP Reporter Plugin";
-  }
-
-  apply(compiler) {
-    compiler.hooks.done.tapPromise(this.name, async (stats) => {
-      const logger = stats.compilation.getLogger(this.name);
-      logger.info("hello from the real logger");
-      setTimeout(() => console.log(this.config.prefix, this.config.message));
-    });
-  }
-}
+const stats = {
+  all: false,
+  assets: true,
+  builtAt: true,
+  cached: false,
+  children: true,
+  chunkGroups: false,
+  chunkModules: false,
+  chunkOrigins: false,
+  chunks: false,
+  colors: true,
+  depth: false,
+  env: true,
+  errorDetails: "auto",
+  errors: true,
+  errorStack: true,
+  excludeAssets: [/hot-update/, /_sock-/],
+  groupAssetsByChunk: true,
+  logging: "info",
+  performance: true,
+  reasons: true,
+  relatedAssets: false,
+  timings: true,
+  version: true,
+  warnings: true,
+};
 
 webpackConfig = {
   module: {
@@ -371,16 +301,18 @@ webpackConfig = {
       /**
        * This image loader is specifically for images which are required or
        * imported into a webpack processed entry file. Optimization is
-       * handled by the imagemin-webpack plugin. These assets will be renamed
-       * with a chunkhash fragment.
+       * handled by image-minimizer-webpack-plugin. These assets will be
+       * renamed with a chunkhash fragment.
        *
-       * All images in `config.src` will be optimized and copied by
-       * copy-webpack-plugin but will keep their original filenames.
+       * All images under `config.src` will be optimized and copied by
+       * copy-webpack-plugin but will keep their original filenames and
+       * relative paths. Images included in SCSS files will be processed
+       * twice, once with a hashed name and again with its original name.
        */
       {
-        test: /\.(gif|png|jpe?g|svg)$/i,
+        // test: /\.(gif|png|jpe?g|svg)$/i,
+        test: /.(jpe?g|png|gif|tif|webp|svg|avif)$/i,
         use: [
-          "cache-loader",
           {
             loader: "url-loader",
             options: {
@@ -388,7 +320,7 @@ webpackConfig = {
               fallback: {
                 loader: "file-loader",
                 options: {
-                  name: "images/[name]-[hash:6].[ext]",
+                  name: "[name]-[contenthash:8].[ext]",
                 },
               },
             },
@@ -413,24 +345,29 @@ webpackConfig = {
     modules: [
       path.resolve("../tools/node_modules"),
       path.resolve("../site/node_modules"),
+      path.resolve("./node_modules"),
     ],
   },
 
   resolveLoader: {
-    modules: [path.resolve("../tools/node_modules")],
+    modules: [
+      path.resolve("../tools/node_modules"),
+      path.resolve("./node_modules"), // for local development when running outside of Docker
+    ],
   },
 
   entry,
 
   output: {
     path: path.resolve(__dirname, config.dist),
-    pathinfo: false,
+    // pathinfo: false,
     /**
      * Primary output filenames SHOULD NOT include hashes in development
      */
-    filename: isProduction ? "[name]-[hash].js" : "[name].js",
-    chunkFilename: "[id]-[chunkhash:6].js",
+    filename: isProduction ? "[name]-[contenthash:8].js" : "[name].js",
+    chunkFilename: "[id]-[chunkhash:8].js",
     publicPath: config.publicPath,
+    clean: true, // TODO: Check that this is a sound replacement for the clean-webpack plugin
   },
 
   devServer: {
@@ -553,43 +490,29 @@ webpackConfig = {
     //   outputPath: `${siteDir}/webpack/events.json`
     // }),
 
-    new CleanWebpackPlugin({ verbose: false, cleanStaleWebpackAssets: false }),
+    // new CleanWebpackPlugin({ verbose: false, cleanStaleWebpackAssets: false }),
     new MiniCssExtractPlugin({
-      filename: isProduction ? "[name]-[hash].css" : "[name].css",
+      filename: isProduction ? "[name]-[contenthash:8].css" : "[name].css",
     }),
 
-    /**
-     * This config is for webpack-copy-plugin@6.1.0 running under webpack@5-beta, which isn't released yet.
-     * When we upgrade webpack, switch back to this config.
-     */
-    // new copyPlugin({
-    //   patterns: [
-    //     {
-    //       from: "**/*",
-    //       globOptions: {
-    //         dot: true,
-    //         ignore: ["**/{blocks,fonts,js,sass}/**"],
-    //       },
-    //       cacheTransform: true,
-    //     },
-    //   ],
-    // }),
-
-    /**
-     * This config is for webpack-copy-plugin@5 running under webpack@4
-     */
-    new copyPlugin([{ from: "**/*", cache: true }], {
-      logLevel: isProduction ? "warn" : "error",
-      ignore: ["{blocks,fonts,js,sass}/**"],
+    new copyPlugin({
+      patterns: [
+        {
+          from: "**/*",
+          globOptions: {
+            dot: true,
+            ignore: [
+              "**/{.gitignore,.DS_Store}",
+              "**/{blocks,fonts,js,sass}/**",
+            ],
+          },
+        },
+      ],
     }),
 
-    new ImageminPlugin({
-      bail: false, // Ignore errors on corrupted images
-      cache: true,
-      // exclude: [/node_modules/],
-      name: "[path][name].[ext]",
-      imageminOptions: {
-        plugins: isProduction ? imageminProdPlugins : imageminDevPlugins,
+    new ImageMinimizerPlugin({
+      minimizerOptions: {
+        plugins: ImageminPlugins(isProduction),
       },
     }),
 
@@ -598,7 +521,10 @@ webpackConfig = {
       manifestFile: config.manifestFile,
     }),
 
-    new afterDoneReporterPlugin(),
+    new AfterDoneReporterPlugin({
+      echo: process.env.WEBPACK_DEV_SERVER,
+      message: `Dev site ${chalk.blue.bold(`http://localhost:${sockPort}`)}`,
+    }),
     // new BrowserSyncPlugin(
     //   {
     //     host: "localhost",
@@ -625,26 +551,17 @@ webpackConfig = {
             analyzerMode: "static",
             generateStatsFile: isProduction,
             openAnalyzer: false,
-            reportFilename: `${siteDir}/webpack/stats/index.html`,
-            statsFilename: `${siteDir}/webpack/stats/stats.json`,
+            reportFilename: `${projectDir}/builds/webpack-stats/index.html`,
+            statsFilename: `${projectDir}/builds/webpack-stats/stats.json`,
           }),
         ]),
     // : [])
   ],
   optimization: {
-    // removeEmptyChunks: isProduction,
-    // splitChunks: {
-    //   // chunks: "initial",
-    //   cacheGroups: {
-    //     vendors: {
-    //       chunks: "all",
-    //       priority: -10,
-    //       test: /[\\/]node_modules[\\/]/,
-    //       reuseExistingChunk: true
-    //     }
-    //   },
-    //   minSize: 30000
-    // }
+    splitChunks: {
+      // include all types of chunks
+      chunks: "all",
+    },
   },
 };
 

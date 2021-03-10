@@ -14,7 +14,7 @@
  *
  * @property {string} publicPath - The base path for all assets. Passed directly to Webpack
  *
- * @property {string} contentBase - Directory of static content to be servde by Webpack DevServer
+ * @property {string} contentBase - Directory of static content to be served by Webpack DevServer
  *
  * @property {string} manifestFile - Filepath location of the dependency-manifest JSON file
  *
@@ -26,7 +26,7 @@
  *      {@link https://github.com/sass/node-sass|Node-sass (LibSass)}
  *      {@link https://github.com/sass/dart-sass|Dart-Sass (canonical Sass)}
  *
- * @property {array|string} transpileDependencies - List dependencies fto be transpiled by Babel.
+ * @property {array|string} transpileDependencies - List of dependencies to be transpiled by Babel.
  *      Based on the setting in Vue. Two modules, ansi-regex and normalize-url, are included by
  *      default since they're part of webpack DevServer and have been known to cause issues.
  *      {@link https://cli.vuejs.org/config/#transpiledependencies| }
@@ -55,7 +55,7 @@ const defaultConfig = {
   publicPath: "/dist/",
   contentBase: "/dist/",  // TODO: Should this be false?
   manifestFile: "./dependency-manifest.json",
-  sass: "node-sass",
+  sass: "sass",
   port: 8080,
   transpileDependencies: ["ansi-regex", "normalize-url"],
   proxy: null, // TODO this doesn't do much yet, make devServer conditional,

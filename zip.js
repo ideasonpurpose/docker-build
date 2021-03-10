@@ -1,48 +1,49 @@
 const fs = require("fs-extra");
 const path = require("path").posix;
 
-const { cosmiconfigSync } = require("cosmiconfig");
-
 const chalk = require("chalk");
-const gray = chalk.gray;
-
 const ora = require("ora");
 const filesize = require("filesize");
-
 const replaceStream = require("replacestream");
-
 const isTextPath = require("is-text-path");
 const prettyHrtime = require("pretty-hrtime");
 const globby = require("globby");
-
 const archiver = require("archiver");
-
 const readPkgUp = require("read-pkg-up");
 
-const siteDir = path.resolve(__dirname, "../site");
-
-const explorerSync = cosmiconfigSync("ideasonpurpose");
-const configFile = explorerSync.search(siteDir);
+const { cosmiconfigSync } = require("cosmiconfig");
 
 const defaultConfig = require("./default.config.js");
+
+const siteDir = path.resolve(__dirname, "../site");
+const explorerSync = cosmiconfigSync("ideasonpurpose");
+const configFile = explorerSync.search(siteDir) || { config: {} };
+
 const config = { ...defaultConfig, ...configFile.config };
+const projectDir = path.resolve(siteDir, config.src, "../");
 
-const { pkg } = readPkgUp.sync({ cwd: siteDir });
-
-const pkgName = process.env.NAME || pkg.name;
+const { packageJson } = readPkgUp.sync({ cwd: siteDir }) || {
+  packageJson: {},
+};
+const pkgName = process.env.NAME || packageJson.name || null;
 
 const archive = archiver("zip", { zlib: { level: 9 } });
 
-const versionDir =
-  pkg && pkgName && pkg.version
-    ? `${pkgName}-${pkg.version}`.replace(/[ .]/g, "_")
+const versionDirName =
+  packageJson && pkgName && packageJson.version
+    ? `${pkgName}-${packageJson.version}`.replace(/[ .]/g, "_")
     : "archive";
-const zipFile = path.resolve(siteDir, `builds/${versionDir}.zip`); // TODO: remove '-webpack'
+
+const zipFile = path.resolve(
+  siteDir,
+  config.src,
+  `../builds/${versionDirName}.zip`
+);
 
 let inBytes = 0;
 let fileCount = 0;
 
-const prettierHrtime = hrtime => {
+const prettierHrtime = (hrtime) => {
   let timeString;
   const seconds = hrtime[1] > 5e6 ? " seconds" : " second";
   if (hrtime[0] > 60) {
@@ -85,23 +86,27 @@ output.on("finish", () => {
   );
 });
 
-archive.pipe(output);
-
-// TODO: WordPress specific, up one from config.src
-const globOpts = {
-  cwd: path.resolve(siteDir, `wp-content/themes/${pkgName}`),
-  nodir: false
-};
-
 const start = process.hrtime();
 
-globby(["**/*", "!src", "!**/*.sql"], globOpts)
-  .then(fileList =>
-    fileList.map(f => {
+archive.pipe(output);
+
+const globOpts = { cwd: projectDir, nodir: false };
+globby(["**/*", "!src", "!builds", "!**/*.sql", "!**/node_modules"], globOpts)
+  .then((fileList) => {
+    /**
+     * Throw an error and bail out if there are no files to zip
+     */
+    if (!fileList.length) {
+      throw new Error("No files found.");
+    }
+    return fileList;
+  })
+  .then((fileList) =>
+    fileList.map((f) => {
       const file = {
         path: f,
         stat: fs.statSync(path.join(globOpts.cwd, f)),
-        contents: fs.createReadStream(path.join(globOpts.cwd, f))
+        contents: fs.createReadStream(path.join(globOpts.cwd, f)),
       };
 
       /**
@@ -113,11 +118,11 @@ globby(["**/*", "!src", "!**/*.sql"], globOpts)
         const devPath = new RegExp(`wp-content/themes/${pkgName}/`, "gi");
 
         file.contents = file.contents.pipe(
-          replaceStream(devPath, `wp-content/themes/${versionDir}/`)
+          replaceStream(devPath, `wp-content/themes/${versionDirName}/`)
         );
       }
 
-      file.contents.on("data", chunk => {
+      file.contents.on("data", (chunk) => {
         var stop = new Date().getTime();
 
         inBytes += chunk.length;
@@ -136,11 +141,11 @@ globby(["**/*", "!src", "!**/*.sql"], globOpts)
       return file;
     })
   )
-  .then(fileList =>
-    fileList.map(f =>
+  .then((fileList) =>
+    fileList.map((f) =>
       archive.append(f.contents, {
         name: f.path,
-        prefix: versionDir
+        prefix: versionDirName,
       })
     )
   )

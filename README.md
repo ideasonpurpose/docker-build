@@ -41,7 +41,7 @@ This is the public url path to the dist folder. Web browsers will reference our 
 
 #### `sass` (optional)
 
-Specify the Sass implementation to use. Used by [Sass-loader][]. Supports `node-sass` ([LibSass][]) and `sass` ([Dart-sass][])
+Specify the Sass implementation to use. Used by [Sass-loader][]. Supports `node-sass` ([LibSass][]) and `sass` ([Dart-sass][]). Default: **`sass`**
 
 #### `proxy` (optional)
 
@@ -61,12 +61,13 @@ const pkg = require("./package.json");
 module.exports = {
   src: `./wp-content/themes/${pkg.name}/src`,
   dist: `./wp-content/themes/${pkg.name}/dist`,
-  entry: ["./js/main.js", "./js/admin.js", "./js/editor-blocks.js"],
+  entry: ["./js/main.js", "./js/admin.js", "./js/editor.js"],
   publicPath: "/_assets/dist/",
   proxy: `${pkg.name}.test`,
 };
 ```
 
+<!--
 ### Jekyll config
 
 For Jekyll projects, the config will look something like this:
@@ -81,6 +82,7 @@ module.exports = {
   manifestFile: "../_data/dependency-manifest.json", // Write the dependency-manifest into _data
 };
 ```
+-->
 
 ## Running a build from Docker
 
@@ -130,13 +132,6 @@ The name of the project, ideally the `name` property from package.json. This sho
 
 Mount the project's web root directory to `/usr/src/site`
 
-## Todo
-
-- config file (load `/usr/src/site/_config.yml` from our webpack config)
-- ~~Shrink image, start from node:11-slim or node:11-alpine~~
-- ~~auto-inject local hostname or IP~~
-- ~~Docker autobuilds~~
-
 ## Notes
 
 > Documentation notes to be cleaned up
@@ -144,12 +139,6 @@ Mount the project's web root directory to `/usr/src/site`
 Tooling runs from `/usr/src/tools` inside the Docker image. Site files are expected to be mounted to `/usr/src/site`
 
 Requesting `/webpack/reload` from the devserver will will trigger a full reload for all connected clients.
-
-The config object can include additional sources/entry-points, (todo: name this better) include an array of relative source files like this:
-
-```js
-
-```
 
 ### Code Splitting and deferred loading
 
@@ -172,6 +161,8 @@ To iterate locally, build the image using the same name as the Docker Hub remote
 ```sh
 docker build . --tag ideasonpurpose/docker-build:dev
 ```
+
+Tooling can be used outside of Docker by creating a sibling `site` directory alongside the checkout of this project. It will work with an empty directory, but you'll probably want to create `src/js/main.js` so webpack has something to work with.
 
 ## Related Projects
 
