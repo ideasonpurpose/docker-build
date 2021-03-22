@@ -1,6 +1,6 @@
 FROM node:14.16.0-buster-slim
 
-LABEL version="0.8.0"
+LABEL version="0.9.0"
 
 # enable color in the terminal
 ENV TERM xterm-256color
