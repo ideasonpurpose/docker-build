@@ -1,4 +1,4 @@
-FROM node:12.19.0-slim
+FROM node:14.16.0-buster-slim
 
 LABEL version="0.8.0"
 
@@ -26,13 +26,12 @@ RUN apt-get update -qq \
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
 
 #
-# NETWORK DEBUGGING TOOLS
-# TODO: Remove or disable if not needed
-#
+# NETWORK DEBUGGING TOOLS - used for development, disable for production
 # RUN apt-get update -qq \
 #     && apt-get install -y --no-install-recommends \
 #       iputils-ping \
 #       dnsutils \
+#       curl \
 #       vim \
 #     && rm -rf /var/lib/apt/lists/*
 
@@ -46,7 +45,7 @@ COPY webpack.config.js ./
 COPY default.config.js ./
 COPY zip.js ./
 COPY explore.js ./
-COPY browsersync.js ./
+# COPY browsersync.js ./
 COPY lib ./lib
 
 # alpine cleanup:
