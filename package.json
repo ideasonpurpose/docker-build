@@ -24,13 +24,20 @@
     "node-sass": "node-sass --include-path /usr/src/site/wp-content/themes/iop-njhi/src/sass /usr/src/site/wp-content/themes/iop-njhi/src/sass/main.scss",
     "preview": "node browsersync.js",
     "start": "webpack serve",
-    "start:debug": "node --inspect-brk=0.0.0.0 node_modules/.bin/webpack-dev-server",
+    "start:debug": "node --inspect-brk=0.0.0.0 node_modules/.bin/webpack serve",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "version": "version-everything && auto-changelog && git add -u",
     "watch": "webpack --progress --profile --watch --color --display-error-details",
     "webpack": "node --trace-deprecation node_modules/webpack/bin/webpack.js",
     "webpack:profile": "webpack --profile --progress --json > /usr/src/site/webpack/stats.json",
     "zip": "node zip.js",
     "zip:debug": "node --inspect-brk=0.0.0.0 zip.js"
+  },
+  "jest": {
+    "clearMocks": true,
+    "collectCoverage": true,
+    "verbose": true
   },
   "dependencies": {
     "@babel/core": "^7.13.10",
@@ -51,7 +58,7 @@
     "copy-webpack-plugin": "^8.0.0",
     "core-js": "^3.9.1",
     "cosmiconfig": "^7.0.0",
-    "css-loader": "^5.1.2",
+    "css-loader": "^5.1.3",
     "cssnano": "^4.1.10",
     "dotenv": "^8.2.0",
     "fibers": "^5.0.0",
@@ -67,32 +74,36 @@
     "imagemin-optipng": "^8.0.0",
     "imagemin-pngquant": "^9.0.2",
     "imagemin-svgo": "^9.0.0",
+    "is-ip": "^3.1.0",
     "is-text-path": "^2.0.0",
     "mini-css-extract-plugin": "^1.3.9",
     "node-sass": "^5.0.0",
-    "ora": "^5.3.0",
+    "ora": "^5.4.0",
     "postcss": "^8.2.8",
-    "postcss-loader": "^5.1.0",
+    "postcss-loader": "^5.2.0",
     "pretty-hrtime": "^1.0.3",
     "read-pkg-up": "^7.0.1",
     "replacestream": "^4.0.3",
     "sass": "^1.32.8",
     "sass-loader": "^11.0.1",
     "source-map-explorer": "^2.5.2",
-    "speed-measure-webpack-plugin": "^1.4.2",
     "style-loader": "^2.0.0",
     "svgo": "^2.2.2",
     "url-loader": "^4.1.1",
     "version-everything": "^0.6.3",
-    "webpack": "^5.24.4",
+    "webpack": "^5.27.1",
     "webpack-bundle-analyzer": "^4.4.0",
     "webpack-cli": "^4.5.0",
     "webpack-dev-middleware": "^4.1.0",
     "webpack-dev-server": "^3.11.2",
     "webpack-hot-middleware": "^2.25.0"
   },
+  "devDependencies": {
+    "jest": "^26.6.3"
+  },
   "auto-changelog": {
-    "package": true
+    "package": true,
+    "backfillLimit": 7
   },
   "version-everything": {
     "files": [
