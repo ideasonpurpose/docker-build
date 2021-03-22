@@ -18,8 +18,20 @@
  *
  * @property {string} manifestFile - Filepath location of the dependency-manifest JSON file
  *
- * @property {boolean|null|string} proxy - TBD will be used to configure the proxy <br>
- *      TODO: This should be automatic, maybe valid entries are: true, false, null, string (a valid url)?
+ * @property {boolean|null|string} proxy - This setting can be used to disable the proxy or override
+ *      the default which points to the internal IP address of of docker WordPress service. The purpose
+ *      is to connect the build tools to a backend server so pages which need to be processed, like
+ *      WordPress, can be served from a known backend with front-end assets being built, injected and
+ *      reloaded by webpack.
+ *
+ *      - IP addresses will have a protocol added. (eg. 10.1.0.25 will be used as http://10.1.0.25)
+ *      - Strings which don't start with http/https will attempt to be resolved as hostnames.
+ *        Use this for alternate services, the default, 'wordpress' is treated this way since it
+ *        will be resolved internally by Docker.
+ *      - Url-ish strings will be used as is with no validation.
+ *
+ *      Simple names may cause issues as page contents will be rewritten to replace the default url
+ *      with this value.
  *
  * @property {('sass'|'node-sass'|'dart-sass')} [sass=node-sass] - The Sass implementation to use<br>
  *      Supports Node-sass and Dart-Sass. 'dart-sass' is an alias for 'sass'
@@ -30,6 +42,7 @@
  *      Based on the setting in Vue. Two modules, ansi-regex and normalize-url, are included by
  *      default since they're part of webpack DevServer and have been known to cause issues.
  *      {@link https://cli.vuejs.org/config/#transpiledependencies| }
+ *      TODO: This might be obsolete after updates to webpack-dev-server (2021-03)
  *
  * @example <caption>defaultConfig.entry examples</caption>
  * // A setting like this:
@@ -38,10 +51,10 @@
  * // Yields an entry object like this:
  *  { index: "./js/index.js"}
  *
- * //A string will be wrapped in an array:
+ * // A string will be wrapped in an array:
  *   "./js/main.js"  =>  [ "./js/main.js" ]
  *
- * // Objects pass stright through
+ * // Objects pass straight through
  *   { app: "./js/main.js", index: ["./js/index.js", "./sass/index.scss"] }
  *
  * // Overlapping basenames will be joined into a single entrypoint
@@ -53,13 +66,12 @@ const defaultConfig = {
   dist: "./dist",
   entry: ["./js/index.js"],
   publicPath: "/dist/",
-  contentBase: "/dist/",  // TODO: Should this be false?
+  contentBase: "/dist/", // TODO: Should this be false?
   manifestFile: "./dependency-manifest.json",
   sass: "sass",
   port: 8080,
   transpileDependencies: ["ansi-regex", "normalize-url"],
-  proxy: null, // TODO this doesn't do much yet, make devServer conditional,
-  devtool: false // TEMPORARY, REMOVE AFTER TESTING
+  proxy: 'wordpress',
 };
 
 module.exports = defaultConfig;

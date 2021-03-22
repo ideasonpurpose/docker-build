@@ -13,32 +13,26 @@ const readPkgUp = require("read-pkg-up");
 
 const { cosmiconfigSync } = require("cosmiconfig");
 
-const defaultConfig = require("./default.config.js");
-
 const siteDir = path.resolve(__dirname, "../site");
 const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir) || { config: {} };
 
-const config = { ...defaultConfig, ...configFile.config };
-const projectDir = path.resolve(siteDir, config.src, "../");
+const buildConfig = require("./lib/buildConfig.js");
+
+const config = buildConfig(configFile);
 
 const { packageJson } = readPkgUp.sync({ cwd: siteDir }) || {
   packageJson: {},
 };
-const pkgName = process.env.NAME || packageJson.name || null;
+const archiveName = process.env.NAME || packageJson.name || "archive";
 
 const archive = archiver("zip", { zlib: { level: 9 } });
 
-const versionDirName =
-  packageJson && pkgName && packageJson.version
-    ? `${pkgName}-${packageJson.version}`.replace(/[ .]/g, "_")
-    : "archive";
+const versionDirName = packageJson.version
+  ? `${archiveName}-${packageJson.version}`.replace(/[ .]/g, "_")
+  : archiveName;
 
-const zipFile = path.resolve(
-  siteDir,
-  config.src,
-  `../builds/${versionDirName}.zip`
-);
+const zipFile = path.resolve(siteDir, `_builds/${versionDirName}.zip`);
 
 let inBytes = 0;
 let fileCount = 0;
@@ -90,6 +84,7 @@ const start = process.hrtime();
 
 archive.pipe(output);
 
+const projectDir = path.resolve(siteDir, config.src, "../");
 const globOpts = { cwd: projectDir, nodir: false };
 globby(["**/*", "!src", "!builds", "!**/*.sql", "!**/node_modules"], globOpts)
   .then((fileList) => {
@@ -115,7 +110,7 @@ globby(["**/*", "!src", "!builds", "!**/*.sql", "!**/node_modules"], globOpts)
        * assets and Composer's generated autoloaders.
        */
       if (isTextPath(f)) {
-        const devPath = new RegExp(`wp-content/themes/${pkgName}/`, "gi");
+        const devPath = new RegExp(`wp-content/themes/${archiveName}/`, "gi");
 
         file.contents = file.contents.pipe(
           replaceStream(devPath, `wp-content/themes/${versionDirName}/`)

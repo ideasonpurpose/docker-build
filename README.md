@@ -162,7 +162,7 @@ To iterate locally, build the image using the same name as the Docker Hub remote
 docker build . --tag ideasonpurpose/docker-build:dev
 ```
 
-Tooling can be used outside of Docker by creating a sibling `site` directory alongside the checkout of this project. It will work with an empty directory, but you'll probably want to create `src/js/main.js` so webpack has something to work with.
+Tooling can be used outside of Docker by creating a sibling `site` directory alongside the checkout of this project. It will work with an empty directory, but you'll probably want to create `src/js/main.js` so webpack has something to work with. This is mostly for quickly iterating on webpack, so run `npm run webpack`.
 
 ## Related Projects
 
