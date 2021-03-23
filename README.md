@@ -5,6 +5,7 @@
 [![dockeri.co](https://dockeri.co/image/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)<br>
 [![Push to Docker Hub](https://github.com/ideasonpurpose/docker-build/workflows/Push%20to%20Docker%20Hub/badge.svg)](https://github.com/ideasonpurpose/docker-build) 
 [![Coverage Status](https://coveralls.io/repos/github/ideasonpurpose/docker-build/badge.svg?branch=master)](https://coveralls.io/github/ideasonpurpose/docker-build?branch=master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/a6fabc9730a3b90b255c/maintainability)](https://codeclimate.com/github/ideasonpurpose/docker-build/maintainability)
 
 This repository is the source for Docker AutoBuilds. Get the image on DockerHub: [hub.docker.com/r/ideasonpurpose/docker-build](https://hub.docker.com/r/ideasonpurpose/docker-build)
 
