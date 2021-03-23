@@ -7,6 +7,12 @@ jest.mock("dns", () => {
 require("dns");
 
 const devserverProxy = require("../lib/devserver-proxy.js");
+
+afterEach(() => {
+  jest.clearAllMocks();
+  mockResolve.mockResolvedValue(["11.22.33.44"]);
+});
+
 test("Notify and redirect legacy devserver-proxy-token value", async () => {
   console.log = jest.fn();
   let proxy =
@@ -144,4 +150,44 @@ test("test proxy's onProxyRes handler onEnd passthrough", async () => {
   events.end();
 
   expect(end).toHaveBeenCalled();
+});
+
+test("proxy should rewrite http:// and http:\\/\\/", async () => {
+  const { proxy } = await devserverProxy({ proxy: "wordpress" });
+  const route = proxy["**"];
+  const mockProxyRes = fs.createReadStream(__filename);
+
+  mockProxyRes.headers = {
+    headerKey: "value",
+    host: "example.com",
+    "content-type": "text/html; charset=utf-8",
+  };
+
+  const events = {};
+  jest.spyOn(mockProxyRes, "on").mockImplementation((event, handler) => {
+    events[event] = handler;
+    return mockProxyRes;
+  });
+
+  const setHeader = jest.fn();
+  const end = jest.fn();
+
+  const res = { setHeader, end };
+  const req = {
+    headers: { host: "req.headers.host" },
+    path: "path",
+  };
+
+  route.onProxyRes(mockProxyRes, req, res);
+  events.data(Buffer.from("http://11.22.33.44\n"));
+  events.data(Buffer.from("http:\\/\\/11.22.33.44\n"));
+  events.end();
+
+  expect(end.mock.calls[0][0].toString("utf8")).toMatch(
+    /http:\/\/req.headers.host/
+  );
+
+  expect(end.mock.calls[0][0].toString("utf8")).toMatch(
+    /http:\\\/\\\/req.headers.host/
+  );
 });
