@@ -101,7 +101,7 @@ const pollInterval = Math.max(
 // const devtool = isProduction
 //   ? false
 //   : config.devtool || "eval-cheap-source-map";
-const devtool = false
+const devtool = config.devtool || false;
 
 module.exports = async (env, argv) => {
   return {

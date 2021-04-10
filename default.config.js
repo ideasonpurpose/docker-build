@@ -41,8 +41,13 @@
  * @property {array|string} transpileDependencies - List of dependencies to be transpiled by Babel.
  *      Based on the setting in Vue. Two modules, ansi-regex and normalize-url, are included by
  *      default since they're part of webpack DevServer and have been known to cause issues.
- *      {@link https://cli.vuejs.org/config/#transpiledependencies| }
+ *      {@link https://cli.vuejs.org/config/#transpiledependencies|transpileDependencies }
  *      TODO: This might be obsolete after updates to webpack-dev-server (2021-03)
+ *
+ * @property {boolean|string} [devtool=false] - An option for webpack devtool. Had a lot of problems
+ *      with this so it's sort of here to punch a hole in the config for experimentation.
+ *      {@link https://webpack.js.org/configuration/devtool/#devtool|webpack devtool options}
+ *      TODO: Pick a better default than false
  *
  * @example <caption>defaultConfig.entry examples</caption>
  * // A setting like this:
