@@ -9,7 +9,6 @@ const isTextPath = require("is-text-path");
 const prettyHrtime = require("pretty-hrtime");
 const globby = require("globby");
 const archiver = require("archiver");
-const readPkgUp = require("read-pkg-up");
 
 const { cosmiconfigSync } = require("cosmiconfig");
 
@@ -21,9 +20,8 @@ const buildConfig = require("./lib/buildConfig.js");
 
 const config = buildConfig(configFile);
 
-const { packageJson } = readPkgUp.sync({ cwd: siteDir }) || {
-  packageJson: {},
-};
+const packageJson = require(path.resolve(siteDir, "package.json"));
+
 const archiveName = process.env.NAME || packageJson.name || "archive";
 
 const archive = archiver("zip", { zlib: { level: 9 } });
