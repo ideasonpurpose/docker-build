@@ -254,7 +254,16 @@ module.exports = async (env, argv) => {
       filename: isProduction ? "[name]-[contenthash:8].js" : "[name].js",
       chunkFilename: "[id]-[chunkhash:8].js",
       publicPath: config.publicPath,
-      clean: true, // TODO: Check that this is a sound replacement for the clean-webpack plugin
+      /**
+       * TODO: Check that clean is a sound replacement for the clean-webpack plugin (might not be)
+       *
+       * @link https://github.com/johnagan/clean-webpack-plugin/issues/197
+       * @link https://github.com/webpack/webpack-dev-middleware/issues/861
+       */
+      clean: true,
+      // clean: {
+      //   dry: true, // Log the assets that should be removed instead of deleting them.
+      // },
     },
 
     devServer: {
@@ -269,7 +278,17 @@ module.exports = async (env, argv) => {
       contentBase: path.join("/usr/src/site/", config.contentBase),
       overlay: { warnings: true, errors: true },
       hot: true,
-      writeToDisk: (filePath) => !/\.hot-update\.(js|json)$/.test(filePath), // write everything but hot-update fragments
+      writeToDisk: (filePath) => {
+        // NOTE: Regexp uses a negative lookbehind to match all
+        // return true
+
+        /**
+         * Note: Regexp uses a negative lookbehind to match all
+         * SVG and JSON files which don't include 'hot-update'
+         * _immediately_ before the extension.
+         */
+        return /.+(?<!hot-update)\.(svg|json)$/.test(filePath);
+      },
       stats,
 
       // NOTE: trying to make injection conditional so wp-admin stops reloading
@@ -390,7 +409,7 @@ module.exports = async (env, argv) => {
               dot: true,
               ignore: [
                 "**/{.gitignore,.DS_Store}",
-                "**/{blocks,fonts,js,sass}/**",
+                "{blocks,fonts,js,sass}/**",
               ],
             },
           },
