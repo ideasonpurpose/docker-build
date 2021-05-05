@@ -49,6 +49,7 @@ const stats = {
   env: true,
   errorDetails: "auto",
   errors: true,
+  errorDetails: true,
   errorStack: true,
   excludeAssets: [/hot-update/, /_sock-/],
   groupAssetsByChunk: true,
@@ -121,33 +122,44 @@ module.exports = async (env, argv) => {
             return /node_modules/.test(module) && !moduleRegex.test(module);
           },
 
-          use: {
-            loader: "babel-loader",
-            options: {
-              cacheDirectory: !isProduction,
-              sourceType: "unambiguous",
-              plugins: [
-                "@babel/plugin-syntax-dynamic-import",
-                ...(isProduction
-                  ? []
-                  : ["@babel/plugin-transform-react-jsx-source"]),
-              ],
-              presets: [
-                [
-                  "@babel/preset-env",
-                  {
-                    forceAllTransforms: true,
-                    useBuiltIns: "usage",
-                    configPath: config.src,
-                    corejs: 3,
-                    modules: false,
-                    debug: false,
-                  },
-                ],
-                "@babel/preset-react",
-              ],
-            },
-          },
+          /**
+           * EXPERIMENTAL!!
+           * If JS compilation breaks, try reverting this first.
+           */
+          loader: "esbuild-loader",
+          options: {
+            loader: 'jsx',
+            target: 'es2015'
+          }
+
+
+          // use: {
+          //   loader: "babel-loader",
+          //   options: {
+          //     cacheDirectory: !isProduction,
+          //     sourceType: "unambiguous",
+          //     plugins: [
+          //       "@babel/plugin-syntax-dynamic-import",
+          //       ...(isProduction
+          //         ? []
+          //         : ["@babel/plugin-transform-react-jsx-source"]),
+          //     ],
+          //     presets: [
+          //       [
+          //         "@babel/preset-env",
+          //         {
+          //           forceAllTransforms: true,
+          //           useBuiltIns: "usage",
+          //           configPath: config.src,
+          //           corejs: 3,
+          //           modules: false,
+          //           debug: false,
+          //         },
+          //       ],
+          //       "@babel/preset-react",
+          //     ],
+          //   },
+          // },
         },
         {
           test: /\.(scss|css)$/,
