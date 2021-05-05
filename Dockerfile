@@ -1,3 +1,5 @@
+# TODO: node-sass doesn't compile on node v16 yet: https://github.com/sass/node-sass/issues/3077
+# FROM node:16.0.0-buster-slim
 FROM node:14.16.0-buster-slim
 
 LABEL version="0.9.1"
@@ -7,7 +9,10 @@ ENV TERM xterm-256color
 ENV npm_config_cache /usr/src/site/webpack/.cache
 
 # Disable npm update checks. Not just npm, and no idea where this is documented, but it works
-ENV NO_UPDATE_NOTIFIER true
+# Well it did before node 16
+# ENV NO_UPDATE_NOTIFIER true
+# Found this solution here: https://stackoverflow.com/a/60525400
+RUN npm config set update-notifier false
 
 WORKDIR /usr/src/tools
 
