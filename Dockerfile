@@ -1,6 +1,11 @@
-# TODO: node-sass doesn't compile on node v16 yet: https://github.com/sass/node-sass/issues/3077
+# Premature to put this in an issue yet, but multi-architecture builds will likely need to
+# happen sometime in the near-ish future. Collecting references.
+# One initial bug is that the jpegtran-bin and optipng-bin binaries don't compile on Docker on M1
+# whcih causes a bunhc of stuff to fail.
+# Helpful references:
+#   - https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/
+
 FROM node:16.1.0-buster-slim
-# FROM node:14.16.1-buster-slim
 
 LABEL version="0.9.2"
 
@@ -27,7 +32,11 @@ RUN apt-get update -qq \
       git \
     && rm -rf /var/lib/apt/lists/*
 
+# will likley need these later for compiling optipng and jpegtran
+      # libpng-dev \
+      # libglu1 \
       # zlib1g-dev \
+
 # for node:11-alpine
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
 
@@ -45,8 +54,12 @@ RUN apt-get update -qq \
 # RUN npm config set cache /usr/src/site/webpack/.cache
 
 COPY package*.json ./
-# RUN npm clean-install
-RUN npm install
+RUN npm clean-install
+# when debugging, try a regular install instead of clean-install
+# RUN npm install
+
+# total voodoo. https://github.com/imagemin/optipng-bin/issues/84#issuecomment-343403097
+RUN npm rebuild
 
 COPY webpack.config.js ./
 COPY default.config.js ./
