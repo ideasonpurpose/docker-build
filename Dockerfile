@@ -1,6 +1,6 @@
 # TODO: node-sass doesn't compile on node v16 yet: https://github.com/sass/node-sass/issues/3077
-# FROM node:16.0.0-buster-slim
-FROM node:14.16.0-buster-slim
+FROM node:16.1.0-buster-slim
+# FROM node:14.16.1-buster-slim
 
 LABEL version="0.9.2"
 
@@ -27,6 +27,7 @@ RUN apt-get update -qq \
       git \
     && rm -rf /var/lib/apt/lists/*
 
+      # zlib1g-dev \
 # for node:11-alpine
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
 
@@ -44,7 +45,8 @@ RUN apt-get update -qq \
 # RUN npm config set cache /usr/src/site/webpack/.cache
 
 COPY package*.json ./
-RUN npm clean-install
+# RUN npm clean-install
+RUN npm install
 
 COPY webpack.config.js ./
 COPY default.config.js ./

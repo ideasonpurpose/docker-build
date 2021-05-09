@@ -296,10 +296,10 @@ module.exports = async (env, argv) => {
 
         /**
          * Note: Regexp uses a negative lookbehind to match all
-         * SVG and JSON files which don't include 'hot-update'
+         * SVG, JSON and image files which don't include 'hot-update'
          * _immediately_ before the extension.
          */
-        return /.+(?<!hot-update)\.(svg|json)$/.test(filePath);
+        return /.+(?<!hot-update)\.(svg|json|jpg|png)$/.test(filePath);
       },
       stats,
 
