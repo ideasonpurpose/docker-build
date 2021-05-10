@@ -440,7 +440,7 @@ module.exports = async (env, argv) => {
       }),
 
       new AfterDoneReporterPlugin({
-        echo: env.WEBPACK_SERVE,
+        echo: env && env.WEBPACK_SERVE,
         message: "Dev site " + chalk.blue.bold(`http://localhost:${sockPort}`),
       }),
 
