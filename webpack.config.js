@@ -14,7 +14,7 @@ const devserverProxy = require("./lib/devserver-proxy");
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-const copyPlugin = require("copy-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const DependencyManifestPlugin = require("./lib/DependencyManifestPlugin.js");
@@ -128,10 +128,9 @@ module.exports = async (env, argv) => {
            */
           loader: "esbuild-loader",
           options: {
-            loader: 'jsx',
-            target: 'es2015'
-          }
-
+            loader: "jsx",
+            target: "es2015",
+          },
 
           // use: {
           //   loader: "babel-loader",
@@ -413,7 +412,7 @@ module.exports = async (env, argv) => {
         filename: isProduction ? "[name]-[contenthash:8].css" : "[name].css",
       }),
 
-      new copyPlugin({
+      new CopyPlugin({
         patterns: [
           {
             from: "**/*",
@@ -426,6 +425,7 @@ module.exports = async (env, argv) => {
             },
           },
         ],
+        options: { concurrency: 30 },
       }),
 
       new ImageMinimizerPlugin({
@@ -446,6 +446,7 @@ module.exports = async (env, argv) => {
 
       new BundleAnalyzerPlugin({
         analyzerMode: isProduction ? "static" : "disabled",
+        openAnalyzer: false,
         reportFilename: path.resolve(
           siteDir,
           "_builds/webpack-stats/index.html"
