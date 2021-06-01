@@ -57,11 +57,12 @@ RUN apt-get update -qq \
 
 COPY package*.json ./
 RUN npm clean-install
+# TODO: Multi-architecture builds
 # when debugging, try a regular install instead of clean-install
 # RUN npm install
 
 # total voodoo. https://github.com/imagemin/optipng-bin/issues/84#issuecomment-343403097
-# Attempting to get the image to build on Apple Silicon/arm64
+# TODO: Attempting to get the image to build on Apple Silicon/arm64
 RUN npm rebuild --force gifsicle optipng-bin jpegtran-bin
 
 COPY webpack.config.js ./
