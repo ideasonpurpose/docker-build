@@ -404,9 +404,9 @@ module.exports = async (env, argv) => {
     plugins: [
       new webpack.ProgressPlugin(),
 
-      // new webpack.debug.ProfilingPlugin({
-      //   outputPath: path.resolve(siteDir, "_builds/webpack-stats/profile.json"),
-      // }),
+      // // new webpack.debug.ProfilingPlugin({
+      // //   outputPath: path.resolve(siteDir, "_builds/webpack-stats/profile.json"),
+      // // }),
 
       new MiniCssExtractPlugin({
         filename: isProduction ? "[name]-[contenthash:8].css" : "[name].css",
@@ -416,11 +416,15 @@ module.exports = async (env, argv) => {
         patterns: [
           {
             from: "**/*",
+            // from: "images",
+            // to: "dist",
+            // toType:             'file',
+            // info: (i) => console.log({ i }),
             globOptions: {
               dot: true,
               ignore: [
                 "**/{.gitignore,.DS_Store}",
-                "{blocks,fonts,js,sass}/**",
+                "{blocks,fonts,js,sass}/**/*",
               ],
             },
           },

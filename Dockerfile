@@ -61,7 +61,8 @@ RUN npm clean-install
 # RUN npm install
 
 # total voodoo. https://github.com/imagemin/optipng-bin/issues/84#issuecomment-343403097
-RUN npm rebuild
+# Attempting to get the image to build on Apple Silicon/arm64
+RUN npm rebuild --force gifsicle optipng-bin jpegtran-bin
 
 COPY webpack.config.js ./
 COPY default.config.js ./

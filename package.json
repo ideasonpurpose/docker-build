@@ -29,6 +29,7 @@
     "test:watch": "jest --watch",
     "version": "version-everything && auto-changelog && git add -u",
     "watch": "webpack --progress --profile --watch --color --display-error-details",
+    "configtest": "webpack configtest",
     "webpack": "node --trace-deprecation node_modules/webpack/bin/webpack.js",
     "webpack:profile": "webpack --profile --progress --json > /usr/src/site/webpack/stats.json",
     "zip": "node zip.js",
