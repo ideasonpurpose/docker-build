@@ -6,7 +6,9 @@
 # Helpful references:
 #   - https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/
 
-FROM node:16.1.0-buster-slim
+# Docker Hub node images:  https://hub.docker.com/_/node
+FROM node:16.6.2-buster-slim
+# FROM node:14-buster-slim
 
 LABEL version="0.9.3"
 
@@ -16,9 +18,15 @@ ENV npm_config_cache /usr/src/site/webpack/.cache
 
 # Disable npm update checks. Not just npm, and no idea where this is documented, but it works
 # Well it did before node 16
-# ENV NO_UPDATE_NOTIFIER true
+ENV NO_UPDATE_NOTIFIER true
 # Found this solution here: https://stackoverflow.com/a/60525400
-RUN npm config set update-notifier false
+# ... but since the Dockerfile runs as root, the setting won't be available to the user
+# RUN npm config set update-notifier false
+# so do it manually:
+RUN echo 'update-notifier=false' > /home/node/.npmrc \
+  && chown node:node /home/node/.*
+# Alternate method for the future, also from the same SO question: https://stackoverflow.com/a/46879171/503463
+# RUN echo '{"optOut": true}' > /home/node/.config/configstore/update-notifier-npm.json
 
 WORKDIR /usr/src/tools
 
@@ -54,6 +62,9 @@ RUN apt-get update -qq \
 
 # Set node cache to use the persistent volume
 # RUN npm config set cache /usr/src/site/webpack/.cache
+
+# Ensure we're running the most recent version of npm
+RUN npm install -g npm
 
 COPY package*.json ./
 RUN npm clean-install
