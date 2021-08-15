@@ -290,9 +290,6 @@ module.exports = async (env, argv) => {
       overlay: { warnings: true, errors: true },
       hot: true,
       writeToDisk: (filePath) => {
-        // NOTE: Regexp uses a negative lookbehind to match all
-        // return true
-
         /**
          * Note: Regexp uses a negative lookbehind to match all
          * SVG, JSON and image files which don't include 'hot-update'
@@ -423,6 +420,7 @@ module.exports = async (env, argv) => {
                 "{blocks,fonts,js,sass}/**",
               ],
             },
+            // filter: (resource) => { console.log(resource); return true; },
           },
         ],
         options: { concurrency: 30 },
