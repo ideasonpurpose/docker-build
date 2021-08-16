@@ -1,7 +1,8 @@
 // TODO: Recognize project types and adjust output? WordPress? Jekyll?
 
 const path = require("path").posix;
-const { resolve } = require("dns").promises;
+const { statSync } = require("fs");
+// const { resolve } = require("dns").promises;
 
 const webpack = require("webpack");
 
@@ -103,6 +104,8 @@ const pollInterval = Math.max(
 //   ? false
 //   : config.devtool || "eval-cheap-source-map";
 const devtool = config.devtool || false;
+// temp enabling this to get resolve-url-loader working for fonts in Sass on IOP's site
+// const devtool ='source-map';
 
 module.exports = async (env, argv) => {
   return {
@@ -180,14 +183,22 @@ module.exports = async (env, argv) => {
                 },
               },
             },
+            // {
+            //   loader: "resolve-url-loader",
+            //   options: {
+            //     // sourceMap: true,
+            //     // debug: true,
+            //   },
+            // },
             {
               loader: "sass-loader",
               options: {
                 implementation: require(config.sass),
-                // sourceMap: !isProduction,
+                sourceMap: !isProduction,
+                // sourceMap: true,
                 webpackImporter: true,
                 sassOptions: {
-                  includePaths: [config.src],
+                  includePaths: [path.resolve(config.src, "sass")],
                   outputStyle: "expanded",
                   ...(config.sass === "node-sass"
                     ? { sourceComments: true }
@@ -227,12 +238,7 @@ module.exports = async (env, argv) => {
         },
         {
           test: /fonts\/.*\.(ttf|eot|woff2?)/i,
-          use: [
-            {
-              loader: "file-loader",
-              options: { name: "fonts/[name].[ext]" },
-            },
-          ],
+          type: "asset",
         },
       ],
     },
@@ -291,11 +297,43 @@ module.exports = async (env, argv) => {
       hot: true,
       writeToDisk: (filePath) => {
         /**
-         * Note: Regexp uses a negative lookbehind to match all
-         * SVG, JSON and image files which don't include 'hot-update'
-         * _immediately_ before the extension.
+         * Note: If this is an async function, it will write everything to disk
+         *
+         * Never write hot-update files to disk.
          */
-        return /.+(?<!hot-update)\.(svg|json|jpg|png)$/.test(filePath);
+        if (/.+hot-update\.(js|json)$/.test(filePath)) {
+          return false;
+        }
+
+        if (/.+\.(svg|json|jpg|png)$/.test(filePath)) {
+          const fileStat = statSync(filePath, { throwIfNoEntry: false });
+
+          /**
+           * Always write SVG and JSON files
+           */
+          if (/.+\.(svg|json)$/.test(filePath)) {
+            return true;
+          } else {
+            /**
+             * Write any images under 100k and anything not yet on disk
+             */
+            if (!fileStat || fileStat.size < 100 * 1024) {
+              return true;
+            }
+            /**
+             * TODO: This might all be unnecessary. Webpack seems to be doing a good job with its native caching
+             */
+            const randOffset = Math.random() * 300000; // 0-5 minutes
+            const expired = new Date() - fileStat.mtime > randOffset;
+            relPath = filePath.replace(config.dist, "dist");
+            if (expired) {
+              console.log("DEBUG writeToDisk:", { replacing: relPath });
+              return true;
+            }
+            console.log("DEBUG writeToDisk:", { cached: relPath });
+          }
+        }
+        return false;
       },
       stats,
 
@@ -414,13 +452,16 @@ module.exports = async (env, argv) => {
           {
             from: "**/*",
             globOptions: {
-              dot: true,
+              dot: true, // TODO: Dangerous? Why is this ever necessary?!
               ignore: [
                 "**/{.gitignore,.DS_Store}",
-                "{blocks,fonts,js,sass}/**",
+                config.src + "/{blocks,fonts,js,sass}/**",
               ],
             },
-            // filter: (resource) => { console.log(resource); return true; },
+            // filter: (copyPath) => {
+            //   console.log({ copyPath });
+            //   return true;
+            // },
           },
         ],
         options: { concurrency: 30 },
