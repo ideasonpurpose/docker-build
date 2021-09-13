@@ -221,20 +221,22 @@ module.exports = async (env, argv) => {
          */
         {
           test: /.(jpe?g|png|gif|tif|webp|svg|avif)$/i,
-          use: [
-            {
-              loader: "url-loader",
-              options: {
-                limit: 8192,
-                fallback: {
-                  loader: "file-loader",
-                  options: {
-                    name: "[name]-[contenthash:8].[ext]",
-                  },
-                },
-              },
-            },
-          ],
+          type: 'asset'
+          // use: [
+          //   {
+          //     loader: "url-loader",
+          //     options: {
+          //       limit: 8192,
+          //       esModule: false,
+          //       fallback: {
+          //         loader: "file-loader",
+          //         options: {
+          //           name: "[name]-[contenthash:8].[ext]",
+          //         },
+          //       },
+          //     },
+          //   },
+          // ],
         },
         {
           test: /fonts\/.*\.(ttf|eot|woff2?)/i,
