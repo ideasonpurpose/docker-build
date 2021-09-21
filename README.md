@@ -3,7 +3,7 @@
 #### Version 0.9.5
 
 [![dockeri.co](https://dockeri.co/image/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)<br>
-[![Push to Docker Hub](https://github.com/ideasonpurpose/docker-build/workflows/Push%20to%20Docker%20Hub/badge.svg)](https://github.com/ideasonpurpose/docker-build) 
+[![Push to Docker Hub](https://github.com/ideasonpurpose/docker-build/workflows/Push%20to%20Docker%20Hub/badge.svg)](https://github.com/ideasonpurpose/docker-build)
 [![Coverage Status](https://coveralls.io/repos/github/ideasonpurpose/docker-build/badge.svg?branch=master)](https://coveralls.io/github/ideasonpurpose/docker-build?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a6fabc9730a3b90b255c/maintainability)](https://codeclimate.com/github/ideasonpurpose/docker-build/maintainability)
 
@@ -165,6 +165,19 @@ docker build . --tag ideasonpurpose/docker-build:dev
 ```
 
 Tooling can be used outside of Docker by creating a sibling `site` directory alongside the checkout of this project. It will work with an empty directory, but you'll probably want to create `src/js/main.js` so webpack has something to work with. This is mostly for quickly iterating on webpack, so run `npm run webpack`.
+
+### Debugging webpack
+
+It's possible to debug webpack inside the container by calling `npm run start:debug` instead of the regular `start` command. The build tools will start and report to be listening on port 9229, like this:
+
+```
+Debugger listening on ws://0.0.0.0:9229/ddd8e8e2-0cc9-4163-9a13-dc21579af829
+For help, see: https://nodejs.org/en/docs/inspector
+```
+
+Open the Node debugger in Chrome or Edge developer console and there should be a little green hexagon Node.js icon in the upper right next to the Select Element and Device Emulation icons. Click that to attach to the debugger, find the files in the sidebar and add some breakpoints.
+
+Things that aren't working yet: Code changes, VS Code's debugger. But this does allow breakpoints and deep inspection of the running webpack instance.
 
 ## Related Projects
 

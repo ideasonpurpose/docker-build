@@ -39,7 +39,7 @@ const stats = {
   all: false,
   assets: true,
   builtAt: true,
-  cached: false,
+  cachedModules: false,
   children: false, // Adds a bunch of blank lines to stats output
   chunkGroups: false,
   chunkModules: false,
@@ -55,6 +55,7 @@ const stats = {
   excludeAssets: [/hot-update/, /_sock-/],
   groupAssetsByChunk: true,
   logging: "info",
+  loggingTrace: false,
   performance: true,
   reasons: true,
   relatedAssets: false,
@@ -71,7 +72,6 @@ const buildConfig = require("./lib/buildConfig.js");
 
 const config = buildConfig(configFile);
 
-// module.exports = buildConfig(configFile).then((config) => {
 /**
  * TODO: Is this used?
  */
@@ -104,8 +104,6 @@ const pollInterval = Math.max(
 //   ? false
 //   : config.devtool || "eval-cheap-source-map";
 const devtool = config.devtool || false;
-// temp enabling this to get resolve-url-loader working for fonts in Sass on IOP's site
-// const devtool ='source-map';
 
 module.exports = async (env, argv) => {
   return {
@@ -221,7 +219,7 @@ module.exports = async (env, argv) => {
          */
         {
           test: /.(jpe?g|png|gif|tif|webp|svg|avif)$/i,
-          type: 'asset'
+          type: "asset",
           // use: [
           //   {
           //     loader: "url-loader",
@@ -286,58 +284,84 @@ module.exports = async (env, argv) => {
     },
 
     devServer: {
-      index: "", // enable root proxying
       host: "0.0.0.0",
-      disableHostCheck: true,
-      compress: false,
+      allowedHosts: "all",
+      setupExitSignals: true,
+
+      compress: config.devServerCompress || false, // TODO: True by default in devServer v4, exposed via config.devServerCompress to test speed impact
       port: config.port,
-      sockPort,
-      public: `localhost:${sockPort}`,
-      // TODO: Should contentBase be `false` when there's a proxy?
-      contentBase: path.join("/usr/src/site/", config.contentBase),
-      overlay: { warnings: true, errors: true },
       hot: true,
-      writeToDisk: (filePath) => {
-        /**
-         * Note: If this is an async function, it will write everything to disk
-         *
-         * Never write hot-update files to disk.
-         */
-        if (/.+hot-update\.(js|json)$/.test(filePath)) {
-          return false;
-        }
-
-        if (/.+\.(svg|json|jpg|png)$/.test(filePath)) {
-          const fileStat = statSync(filePath, { throwIfNoEntry: false });
-
-          /**
-           * Always write SVG and JSON files
-           */
-          if (/.+\.(svg|json)$/.test(filePath)) {
-            return true;
-          } else {
-            /**
-             * Write any images under 100k and anything not yet on disk
-             */
-            if (!fileStat || fileStat.size < 100 * 1024) {
-              return true;
-            }
-            /**
-             * TODO: This might all be unnecessary. Webpack seems to be doing a good job with its native caching
-             */
-            const randOffset = Math.random() * 300000; // 0-5 minutes
-            const expired = new Date() - fileStat.mtime > randOffset;
-            relPath = filePath.replace(config.dist, "dist");
-            if (expired) {
-              console.log("DEBUG writeToDisk:", { replacing: relPath });
-              return true;
-            }
-            console.log("DEBUG writeToDisk:", { cached: relPath });
-          }
-        }
-        return false;
+      client: {
+        logging: "info", // TODO: New, is this ok?
+        overlay: { warnings: true, errors: true },
+        // progress: true,   // TODO: New, is this ok?
       },
-      stats,
+      static: {
+        // TODO: Should contentBase be `false` when there's a proxy?
+        directory: path.join("/usr/src/site/", config.contentBase),
+        /*
+         * TODO: Poll options were enabled as a workaround for Docker-win volume inotify
+         *       issues. Looking to make this conditional...
+         *       Maybe defined `isWindows` or `hasiNotify` for assigning a value
+         *       Placeholder defined at the top of the file.
+         *       For now, `usePolling` is a boolean (set to true)
+         *       ref: https://github.com/docker/for-win/issues/56
+         *            https://www.npmjs.com/package/is-windows
+         *       TODO: Safe to remove?
+         *       TODO: Test on vanilla Windows (should now work in WSL)
+         */
+
+        watch: {
+          poll: usePolling && pollInterval,
+          ignored: ["node_modules", "vendor"],
+        },
+      },
+
+      devMiddleware: {
+        index: false, // enable root proxying
+
+        writeToDisk: (filePath) => {
+          /**
+           * Note: If this is an async function, it will write everything to disk
+           *
+           * Never write hot-update files to disk.
+           */
+          if (/.+hot-update\.(js|json)$/.test(filePath)) {
+            return false;
+          }
+
+          if (/.+\.(svg|json|jpg|png)$/.test(filePath)) {
+            const fileStat = statSync(filePath, { throwIfNoEntry: false });
+
+            /**
+             * Always write SVG and JSON files
+             */
+            if (/.+\.(svg|json)$/.test(filePath)) {
+              return true;
+            } else {
+              /**
+               * Write any images under 100k and anything not yet on disk
+               */
+              if (!fileStat || fileStat.size < 100 * 1024) {
+                return true;
+              }
+              /**
+               * TODO: This might all be unnecessary. Webpack seems to be doing a good job with its native caching
+               */
+              const randOffset = Math.random() * 300000; // 0-5 minutes
+              const expired = new Date() - fileStat.mtime > randOffset;
+              relPath = filePath.replace(config.dist, "dist");
+              if (expired) {
+                // console.log("DEBUG writeToDisk:", { replacing: relPath });
+                return true;
+              }
+              // console.log("DEBUG writeToDisk:", { cached: relPath });
+            }
+          }
+          return false;
+        },
+        stats,
+      },
 
       // NOTE: trying to make injection conditional so wp-admin stops reloading
       // injectClient: compilerConfig => {
@@ -345,7 +369,7 @@ module.exports = async (env, argv) => {
       //   return true;
       // },
 
-      before: function (app, server) {
+      onBeforeSetupMiddleware: function (devServer) {
         /**
          * The `/inform` route is an annoying bit of code. Here's why:
          * Ubiquity Wi-fi hardware frequently spams the shit out of their
@@ -355,19 +379,23 @@ module.exports = async (env, argv) => {
          * to `/inform` requests with 404s, filling logs and cluttering
          * terminals. So that's why this is here. I hate it.
          */
-        app.all("/inform", () => false);
+        devServer.app.all("/inform", () => false);
 
         /**
          * The "/webpack/reload" endpoint will trigger a full devServer refresh
          * See current Browsersync implementation here:
          *
-         * https://github.com/ideasonpurpose/wp-theme-init/blob/master/src/ThemeInit.php#L85-L111
+         * https://github.com/ideasonpurpose/wp-theme-init/blob/ad8039c9757ffc3a0a0ed0adcc616a013fdc8604/src/ThemeInit.php#L202
          */
-        app.get("/webpack/reload", function (req, res) {
+        devServer.app.get("/webpack/reload", function (req, res) {
           console.log(
             chalk.yellow("Reload triggered by request to /webpack/reload")
           );
-          server.sockWrite(server.sockets, "content-changed");
+
+          devServer.sendMessage(
+            devServer.webSocketServer.clients,
+            "content-changed"
+          );
           res.json({ status: "Reloading!" });
         });
 
@@ -375,50 +403,50 @@ module.exports = async (env, argv) => {
          * Watch PHP files and reload everything on change
          * TODO: maybe this could move outside the devserver? Would it still be called?`
          * TODO: If this is only for proxied projects, it should be more than just php files?
+         *
+         * TODO: V4 introduced a watchFiles method which should mean we can drop chokidar?
+         * @link https://webpack.js.org/configuration/dev-server/#devserverwatchfiles
          */
-        chokidar
-          .watch(
-            [
-              path.resolve(config.src, "../**/*.php"), // WordPress
-              path.resolve(config.src, `../${config.contentBase}/*.html`), // Jekyll
-            ],
-            {
-              ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
-              ignoreInitial: true,
-              ignorePermissionErrors: true,
-              usePolling,
-              interval: pollInterval,
-            }
-          )
-          .on("all", (event, changedPath) => {
-            const basePath = path.resolve(config.src, "..");
-            const relPath = path.relative(basePath, changedPath);
-            console.log(
-              "Reload triggered by",
-              chalk.bold.yellow(event),
-              "event in",
-              chalk.green(relPath)
-            );
+        // chokidar
+        //   .watch(
+        //     [
+        //       path.resolve(config.src, "../**/*.php"), // WordPress
+        //       path.resolve(config.src, `../${config.contentBase}/*.html`), // Jekyll
+        //     ],
+        //     {
+        //       ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
+        //       ignoreInitial: true,
+        //       ignorePermissionErrors: true,
+        //       usePolling,
+        //       interval: pollInterval,
+        //     }
+        //   )
+        //   .on("all", (event, changedPath) => {
+        //     const basePath = path.resolve(config.src, "..");
+        //     const relPath = path.relative(basePath, changedPath);
+        //     console.log(
+        //       "Reload triggered by",
+        //       chalk.bold.yellow(event),
+        //       "event in",
+        //       chalk.green(relPath)
+        //     );
 
-            server.sockWrite(server.sockets, "content-changed");
-          });
+        //     server.sendMessage(server.sockets, "content-changed");
+        //   });
       },
 
-      /*
-       * TODO: Poll options were enabled as a workaround for Docker-win volume inotify
-       *       issues. Looking to make this conditional...
-       *       Maybe defined `isWindows` or `hasiNotify` for assigning a value
-       *       Placeholder defined at the top of the file.
-       *       For now, `usePolling` is a boolean (set to true)
-       *       ref: https://github.com/docker/for-win/issues/56
-       *            https://www.npmjs.com/package/is-windows
-       *       TODO: Safe to remove?
-       *       TODO: Test on vanilla Windows (should now work in WSL)
-       */
-
-      watchOptions: {
-        poll: usePolling && pollInterval,
-        ignored: ["node_modules", "vendor"],
+      watchFiles: {
+        paths: [
+          path.resolve(config.src, "../**/*.php"), // WordPress
+          path.resolve(config.src, `../${config.contentBase}/*.html`), // Jekyll
+        ],
+        options: {
+          ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
+          ignoreInitial: true,
+          ignorePermissionErrors: true,
+          usePolling,
+          interval: pollInterval,
+        },
       },
 
       ...(await devserverProxy(config)),
@@ -435,7 +463,9 @@ module.exports = async (env, argv) => {
     devtool,
 
     infrastructureLogging: {
+      colors: true,
       level: isProduction ? "warn" : "error",
+      // level: "info",
     },
 
     plugins: [
