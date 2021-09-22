@@ -76,7 +76,7 @@ RUN npm rebuild
 
 COPY webpack.config.js ./
 COPY default.config.js ./
-COPY zip.js ./
+COPY zip.mjs ./
 COPY explore.js ./
 # COPY browsersync.js ./
 COPY lib ./lib

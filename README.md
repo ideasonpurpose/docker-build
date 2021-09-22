@@ -179,6 +179,8 @@ Open the Node debugger in Chrome or Edge developer console and there should be a
 
 Things that aren't working yet: Code changes, VS Code's debugger. But this does allow breakpoints and deep inspection of the running webpack instance.
 
+The **zip.mjs** script can be debugged in VS Code using the **Debug zip.mjs** launch config. It should appear in the VS Code Run and Debug menu.
+
 ## Related Projects
 
 This toolset is installed with our [Docker-based WordPress development environments][docker-wordpress-dev].
