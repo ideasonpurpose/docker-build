@@ -5,17 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
+      "command": "npm run zip",
+      "name": "Debug zip.mjs",
       "request": "launch",
-      "name": "Prettier hrtime",
-      "program": "${workspaceFolder}/prettier-hrtime.js"
-    },
-    {
-      "type": "node",
-      "request": "attach",
-      "name": "Debug from container",
-      "port": 9229,
-      "skipFiles": ["<node_internals>/**"]
+      "type": "node-terminal",
+      "env": {
+        "NAME": "iop-nrmp"
+      }
     }
   ]
 }

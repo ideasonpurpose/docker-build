@@ -1,27 +1,36 @@
-const fs = require("fs-extra");
-const path = require("path").posix;
+import fs from "fs-extra";
+import { posix as path } from "path";
+import chalk from "chalk";
+import ora from "ora";
+import filesize from "filesize";
+import replaceStream from "replacestream";
+import isTextPath from "is-text-path";
+// import prettyHrtime from "pretty-hrtime";
+import { globby } from "globby";
+import archiver from "archiver";
+import { cosmiconfigSync } from "cosmiconfig";
 
-const chalk = require("chalk");
-const ora = require("ora");
-const filesize = require("filesize");
-const replaceStream = require("replacestream");
-const isTextPath = require("is-text-path");
-const prettyHrtime = require("pretty-hrtime");
-const globby = require("globby");
-const archiver = require("archiver");
+import { prettierHrtime } from "./lib/prettier-hrtime.mjs";
 
-const { cosmiconfigSync } = require("cosmiconfig");
-
-const siteDir = path.resolve(__dirname, "../site");
+/**
+ * This is usually run from the Docker image, which will always
+ * mount tools at /usr/src/tools and the site at /usr/src/site
+ *
+ * But for testing, we should be able to use any directory...
+ * but it's easiest to create a sibling directory named "site"
+ * and to just use that.
+ */
+// const siteDir = path.resolve(__dirname, "../site");
+// const siteDir = new URL("../site", import.meta.url).pathname;
+const siteDir = new URL("../site", import.meta.url);
 const explorerSync = cosmiconfigSync("ideasonpurpose");
-const configFile = explorerSync.search(siteDir) || { config: {} };
+const configFile = explorerSync.search(siteDir.pathname) || { config: {} };
 
-const buildConfig = require("./lib/buildConfig.js");
+import buildConfig from "./lib/buildConfig.js";
 
 const config = buildConfig(configFile);
 
-const packageJson = require(path.resolve(siteDir, "package.json"));
-
+const packageJson = fs.readJsonSync(new URL("./package.json", import.meta.url));
 const archiveName = process.env.NAME || packageJson.name || "archive";
 
 const archive = archiver("zip", { zlib: { level: 9 } });
@@ -30,25 +39,28 @@ const versionDirName = packageJson.version
   ? `${archiveName}-${packageJson.version}`.replace(/[ .]/g, "_")
   : archiveName;
 
-const zipFile = path.resolve(siteDir, `_builds/${versionDirName}.zip`);
+const zipFileName = `${versionDirName}.zip`;
+// const zipFile = path.resolve(siteDir, `_builds/${versionDirName}.zip`);
+const zipFile = new URL(`./_builds/${zipFileName}`, siteDir).pathname;
 
 let inBytes = 0;
 let fileCount = 0;
 
-const prettierHrtime = (hrtime) => {
-  let timeString;
-  const seconds = hrtime[1] > 5e6 ? " seconds" : " second";
-  if (hrtime[0] > 60) {
-    timeString = prettyHrtime(hrtime, { verbose: true })
-      .replace(/\d+ (milli|micro|nano)seconds/gi, "")
-      .trim();
-  } else if (hrtime[1] > 5e6) {
-    timeString = prettyHrtime(hrtime).replace(/ s$/, seconds);
-  } else {
-    timeString = prettyHrtime(hrtime);
-  }
-  return timeString;
-};
+// TODO: Module
+// const prettierHrtime = (hrtime) => {
+//   let timeString;
+//   const seconds = hrtime[1] > 5e6 ? " seconds" : " second";
+//   if (hrtime[0] > 60) {
+//     timeString = prettyHrtime(hrtime, { verbose: true })
+//       .replace(/\d+ (milli|micro|nano)seconds/gi, "")
+//       .trim();
+//   } else if (hrtime[1] > 5e6) {
+//     timeString = prettyHrtime(hrtime).replace(/ s$/, seconds);
+//   } else {
+//     timeString = prettyHrtime(hrtime);
+//   }
+//   return timeString;
+// };
 
 console.log(chalk.bold("Bundling Project for Deployment"));
 const spinner = new ora({ text: "Collecting files..." });
@@ -69,7 +81,8 @@ output.on("finish", () => {
   spinner.start("Compressing...");
   spinner.succeed("Compressing... Done!");
   spinner.succeed(
-    `${chalk.bold(path.basename(zipFile))} created in ${duration}.` +
+    // `${chalk.bold(path.basename(zipFile))} created in ${duration}.` +
+    `${chalk.bold(zipFileName)} created in ${duration}.` +
       chalk.gray(
         `(${filesize(outBytes)} archive.`,
         `Saved ${filesize(inBytes - outBytes)}`,
@@ -82,9 +95,15 @@ const start = process.hrtime();
 
 archive.pipe(output);
 
-const projectDir = path.resolve(siteDir, config.src, "../");
-const globOpts = { cwd: projectDir, nodir: false };
-globby(["**/*", "!src", "!builds", "!**/*.sql", "!**/node_modules"], globOpts)
+// const projectDir = path.resolve(siteDir, config.src, "../");
+// const projectDir2 = new URL("../", import.meta.url);
+
+// TODO:  projectDir = NEEDS TO BE THE PARENT directory of srcDir from config!!
+
+const projectDir = new URL(`${config.src}/../`, siteDir);
+// const srcPath = path.relative(siteDir.pathname, config.src);
+const globOpts = { cwd: projectDir.pathname, nodir: false };
+globby(["**/*", "!src", "!_builds", "!**/*.sql", "!**/node_modules"], globOpts)
   .then((fileList) => {
     /**
      * Throw an error and bail out if there are no files to zip
@@ -98,8 +117,10 @@ globby(["**/*", "!src", "!builds", "!**/*.sql", "!**/node_modules"], globOpts)
     fileList.map((f) => {
       const file = {
         path: f,
-        stat: fs.statSync(path.join(globOpts.cwd, f)),
+        // stat: fs.statSync(path.join(globOpts.cwd, f)),
+        stat: fs.statSync(new URL(f, projectDir)),
         contents: fs.createReadStream(path.join(globOpts.cwd, f)),
+        // contents: fs.createReadStream(new URL( f, projectDir)),
       };
 
       /**
@@ -116,7 +137,7 @@ globby(["**/*", "!src", "!builds", "!**/*.sql", "!**/node_modules"], globOpts)
       }
 
       file.contents.on("data", (chunk) => {
-        var stop = new Date().getTime();
+        // var stop = new Date().getTime();
 
         inBytes += chunk.length;
         spinner.start(
