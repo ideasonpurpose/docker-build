@@ -1,15 +1,17 @@
 import fs from "fs-extra";
 import { posix as path } from "path";
-import chalk from "chalk";
-import ora from "ora";
-import filesize from "filesize";
-import replaceStream from "replacestream";
-import isTextPath from "is-text-path";
-// import prettyHrtime from "pretty-hrtime";
-import { globby } from "globby";
-import archiver from "archiver";
-import { cosmiconfigSync } from "cosmiconfig";
 
+import archiver from "archiver";
+import chalk from "chalk";
+import { cosmiconfigSync } from "cosmiconfig";
+import filesize from "filesize";
+import { globby } from "globby";
+import isTextPath from "is-text-path";
+import ora from "ora";
+// import prettyHrtime from "pretty-hrtime";
+import replaceStream from "replacestream";
+
+import buildConfig from "./lib/buildConfig.js";
 import { prettierHrtime } from "./lib/prettier-hrtime.mjs";
 
 /**
@@ -23,8 +25,6 @@ import { prettierHrtime } from "./lib/prettier-hrtime.mjs";
 const siteDir = new URL("../site/", import.meta.url);
 const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir.pathname) || { config: {} };
-
-import buildConfig from "./lib/buildConfig.js";
 
 const config = buildConfig(configFile);
 
@@ -44,25 +44,8 @@ const zipFile = new URL(`_builds/${zipFileName}`, siteDir).pathname;
 let inBytes = 0;
 let fileCount = 0;
 
-// TODO: Module
-// const prettierHrtime = (hrtime) => {
-//   let timeString;
-//   const seconds = hrtime[1] > 5e6 ? " seconds" : " second";
-//   if (hrtime[0] > 60) {
-//     timeString = prettyHrtime(hrtime, { verbose: true })
-//       .replace(/\d+ (milli|micro|nano)seconds/gi, "")
-//       .trim();
-//   } else if (hrtime[1] > 5e6) {
-//     timeString = prettyHrtime(hrtime).replace(/ s$/, seconds);
-//   } else {
-//     timeString = prettyHrtime(hrtime);
-//   }
-//   return timeString;
-// };
-
 console.log(chalk.bold("Bundling Project for Deployment"));
 const spinner = new ora({ text: "Collecting files..." });
-// spinner.start("Compressing...");
 
 fs.ensureFileSync(zipFile);
 const output = fs.createWriteStream(zipFile);
@@ -79,7 +62,6 @@ output.on("finish", () => {
   spinner.start("Compressing...");
   spinner.succeed("Compressing... Done!");
   spinner.succeed(
-    // `${chalk.bold(path.basename(zipFile))} created in ${duration}.` +
     `${chalk.bold(zipFileName)} created in ${duration}.` +
       chalk.gray(
         `(${filesize(outBytes)} archive.`,
@@ -130,8 +112,6 @@ globby(["**/*", "!src", "!_builds", "!**/*.sql", "!**/node_modules"], globOpts)
       }
 
       file.contents.on("data", (chunk) => {
-        // var stop = new Date().getTime();
-
         inBytes += chunk.length;
         spinner.start(
           `Found ${fileCount} files`,
