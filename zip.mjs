@@ -20,9 +20,7 @@ import { prettierHrtime } from "./lib/prettier-hrtime.mjs";
  * but it's easiest to create a sibling directory named "site"
  * and to just use that.
  */
-// const siteDir = path.resolve(__dirname, "../site");
-// const siteDir = new URL("../site", import.meta.url).pathname;
-const siteDir = new URL("../site", import.meta.url);
+const siteDir = new URL("../site/", import.meta.url);
 const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir.pathname) || { config: {} };
 
@@ -41,7 +39,7 @@ const versionDirName = packageJson.version
 
 const zipFileName = `${versionDirName}.zip`;
 // const zipFile = path.resolve(siteDir, `_builds/${versionDirName}.zip`);
-const zipFile = new URL(`./_builds/${zipFileName}`, siteDir).pathname;
+const zipFile = new URL(`_builds/${zipFileName}`, siteDir).pathname;
 
 let inBytes = 0;
 let fileCount = 0;
@@ -95,13 +93,8 @@ const start = process.hrtime();
 
 archive.pipe(output);
 
-// const projectDir = path.resolve(siteDir, config.src, "../");
-// const projectDir2 = new URL("../", import.meta.url);
-
-// TODO:  projectDir = NEEDS TO BE THE PARENT directory of srcDir from config!!
-
+// Set projectDir to the parent directory of config.src
 const projectDir = new URL(`${config.src}/../`, siteDir);
-// const srcPath = path.relative(siteDir.pathname, config.src);
 const globOpts = { cwd: projectDir.pathname, nodir: false };
 globby(["**/*", "!src", "!_builds", "!**/*.sql", "!**/node_modules"], globOpts)
   .then((fileList) => {
