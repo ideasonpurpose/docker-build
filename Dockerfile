@@ -47,6 +47,17 @@ RUN apt-get update -qq \
       # zlib1g-dev \
       # nasm
 
+# Install the dart-sass binary, because why not?
+RUN apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      curl \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -L https://github.com/sass/dart-sass/releases/download/1.42.1/dart-sass-1.42.1-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
+    && tar -C /tmp -xvf /tmp/dart-sass.tar.gz \
+    && mv /tmp/dart-sass/sass /usr/local/bin/sass \
+    && rm -rf /tmp/dart-sass*
+
 # for node:11-alpine
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
 
