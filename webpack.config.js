@@ -10,7 +10,7 @@ const { cosmiconfigSync } = require("cosmiconfig");
 
 const chalk = require("chalk");
 
-const chokidar = require("chokidar");
+// const chokidar = require("chokidar");
 const devserverProxy = require("./lib/devserver-proxy");
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -20,6 +20,7 @@ const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const DependencyManifestPlugin = require("./lib/DependencyManifestPlugin.js");
 const AfterDoneReporterPlugin = require("./lib/AfterDoneReporterPlugin");
+const WatchRunReporterPlugin = require("./lib/WatchRunReporterPlugin");
 const ImageminPlugins = require("./lib/ImageminPlugins.js");
 
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
@@ -48,9 +49,9 @@ const stats = {
   colors: true,
   depth: false,
   env: true,
-  errorDetails: "auto",
-  errors: true,
+  // errorDetails: "auto",
   errorDetails: true,
+  errors: true,
   errorStack: true,
   excludeAssets: [/hot-update/, /_sock-/],
   groupAssetsByChunk: true,
@@ -75,7 +76,7 @@ const config = buildConfig(configFile);
 /**
  * TODO: Is this used?
  */
-const projectDir = path.resolve(siteDir, config.src, "../");
+// const projectDir = path.resolve(siteDir, config.src, "../");
 
 /**
  * This changes the reported port for websockets, so devserver updates
@@ -348,13 +349,13 @@ module.exports = async (env, argv) => {
               /**
                * TODO: This might all be unnecessary. Webpack seems to be doing a good job with its native caching
                */
-              const randOffset = Math.random() * 300000; // 0-5 minutes
-              const expired = new Date() - fileStat.mtime > randOffset;
-              relPath = filePath.replace(config.dist, "dist");
-              if (expired) {
-                // console.log("DEBUG writeToDisk:", { replacing: relPath });
-                return true;
-              }
+              // const randOffset = Math.random() * 300000; // 0-5 minutes
+              // const expired = new Date() - fileStat.mtime > randOffset;
+              // const relPath = filePath.replace(config.dist, "dist");
+              // if (expired) {
+              //   console.log("DEBUG writeToDisk:", { replacing: relPath });
+              //   return true;
+              // }
               // console.log("DEBUG writeToDisk:", { cached: relPath });
             }
           }
@@ -508,6 +509,10 @@ module.exports = async (env, argv) => {
       new DependencyManifestPlugin({
         writeManifestFile: true,
         manifestFile: config.manifestFile,
+      }),
+
+      new WatchRunReporterPlugin({
+        echo: env && env.WEBPACK_SERVE,
       }),
 
       new AfterDoneReporterPlugin({
