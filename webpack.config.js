@@ -511,9 +511,7 @@ module.exports = async (env, argv) => {
         manifestFile: config.manifestFile,
       }),
 
-      new WatchRunReporterPlugin({
-        echo: env && env.WEBPACK_SERVE,
-      }),
+      new WatchRunReporterPlugin(),
 
       new AfterDoneReporterPlugin({
         echo: env && env.WEBPACK_SERVE,
