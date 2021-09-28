@@ -7,7 +7,7 @@
 #   - https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/
 
 # Docker Hub node images:  https://hub.docker.com/_/node
-FROM node:16.6.2-buster-slim
+FROM node:16.10.0-buster-slim
 # FROM node:14-buster-slim
 
 LABEL version="0.9.6"
