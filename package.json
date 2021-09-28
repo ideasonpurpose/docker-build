@@ -1,6 +1,6 @@
 {
   "name": "iop-build-tools",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "description": "Bundling our webpack build-chain into Docker",
   "bugs": "https://github.com/ideasonpurpose/docker-build/issues",
   "repository": "ideasonpurpose/docker-build",
