@@ -10,7 +10,7 @@
       "request": "launch",
       "type": "node-terminal",
       "env": {
-        "NAME": "iop-nrmp"
+        "NAME": "iop"
       }
     }
   ]

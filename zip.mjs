@@ -28,7 +28,7 @@ const configFile = explorerSync.search(siteDir.pathname) || { config: {} };
 
 const config = buildConfig(configFile);
 
-const packageJson = fs.readJsonSync(new URL("./package.json", import.meta.url));
+const packageJson = fs.readJsonSync(new URL("package.json", siteDir));
 const archiveName = process.env.NAME || packageJson.name || "archive";
 
 const archive = archiver("zip", { zlib: { level: 9 } });
@@ -38,7 +38,6 @@ const versionDirName = packageJson.version
   : archiveName;
 
 const zipFileName = `${versionDirName}.zip`;
-// const zipFile = path.resolve(siteDir, `_builds/${versionDirName}.zip`);
 const zipFile = new URL(`_builds/${zipFileName}`, siteDir).pathname;
 
 let inBytes = 0;
