@@ -176,9 +176,13 @@ module.exports = async (env, argv) => {
             {
               loader: "postcss-loader",
               options: {
-                // sourceMap: !isProduction,
                 postcssOptions: {
-                  plugins: [autoprefixer, ...(isProduction ? [cssnano] : [])],
+                  plugins: isProduction
+                    ? [
+                        autoprefixer,
+                        cssnano({ preset: ["default", { colormin: false }] }),
+                      ]
+                    : [autoprefixer],
                 },
               },
             },
