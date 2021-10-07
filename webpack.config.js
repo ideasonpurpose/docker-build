@@ -199,10 +199,14 @@ module.exports = async (env, argv) => {
                 implementation: require(config.sass),
                 sourceMap: !isProduction,
                 // sourceMap: true,
-                webpackImporter: true,
+                webpackImporter: false,
                 sassOptions: {
-                  includePaths: [path.resolve(config.src, "sass")],
+                  includePaths: [
+                    path.resolve(config.src, "sass"),
+                    path.resolve("../site/node_modules"),
+                  ],
                   outputStyle: "expanded",
+                  // TODO: Drop this when we drop node-sass
                   ...(config.sass === "node-sass"
                     ? { sourceComments: true }
                     : {}),
@@ -474,7 +478,8 @@ module.exports = async (env, argv) => {
     },
 
     plugins: [
-      new webpack.ProgressPlugin(),
+      // ...(isProduction ? [new webpack.ProgressPlugin()] : []),
+      // new webpack.ProgressPlugin(),
 
       // new webpack.debug.ProfilingPlugin({
       //   outputPath: path.resolve(siteDir, "_builds/webpack-stats/profile.json"),

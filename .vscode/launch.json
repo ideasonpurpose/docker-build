@@ -12,6 +12,15 @@
       "env": {
         "NAME": "iop"
       }
+    },
+    {
+      "command": "npm run build",
+      "name": "Debug webpack",
+      "request": "launch",
+      "type": "node-terminal",
+      "env": {
+        "NAME": "iop"
+      }
     }
   ]
 }

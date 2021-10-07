@@ -14,7 +14,7 @@
     "analyze": "WEBPACK_BUNDLE_ANALYZER=true webpack",
     "postanalyze": "node explore.js",
     "browsersync": "node browsersync.js",
-    "build": "NODE_ENV=production webpack --progress --color --stats-errors",
+    "build": "NODE_ENV=production webpack --color --stats-errors",
     "postbuild": "npm run zip",
     "build:debug": "node --inspect-brk=0.0.0.0 node_modules/.bin/webpack",
     "postbuild:debug": "npm run zip:debug",
