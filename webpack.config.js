@@ -378,25 +378,30 @@ module.exports = async (env, argv) => {
       //   return true;
       // },
 
-      onBeforeSetupMiddleware: function (devServer) {
+      // onBeforeSetupMiddleware: function (devServer) {
+      setupMiddlewares: (middlewares, devServer) => {
+        if (!devServer) {
+          throw new Error("webpack-dev-server is not defined");
+        }
+
         /**
          * The `/inform` route is an annoying bit of code. Here's why:
          * Ubiquity Wi-fi hardware frequently spams the shit out of their
          * networks, specifically requesting the `/inform` route from
-         * every device. Our office and my home network both have
-         * Ubiquity hardware, so dev servers were constantly responding
-         * to `/inform` requests with 404s, filling logs and cluttering
+         * every device. We still have some Ubiquity hardware on our
+         * networks, so dev servers were constantly responding to
+         * `/inform` requests with 404s, filling logs and cluttering
          * terminals. So that's why this is here. I hate it.
          */
         devServer.app.all("/inform", () => false);
 
         /**
          * The "/webpack/reload" endpoint will trigger a full devServer refresh
-         * See current Browsersync implementation here:
+         * Originally from our Browsersync implementation:
          *
          * https://github.com/ideasonpurpose/wp-theme-init/blob/ad8039c9757ffc3a0a0ed0adcc616a013fdc8604/src/ThemeInit.php#L202
          */
-        devServer.app.get("/webpack/reload", function (req, res) {
+        devServer.app.get("/webpack/reload", (req, res) => {
           console.log(
             chalk.yellow("Reload triggered by request to /webpack/reload")
           );
@@ -408,40 +413,7 @@ module.exports = async (env, argv) => {
           res.json({ status: "Reloading!" });
         });
 
-        /**
-         * Watch PHP files and reload everything on change
-         * TODO: maybe this could move outside the devserver? Would it still be called?`
-         * TODO: If this is only for proxied projects, it should be more than just php files?
-         *
-         * TODO: V4 introduced a watchFiles method which should mean we can drop chokidar?
-         * @link https://webpack.js.org/configuration/dev-server/#devserverwatchfiles
-         */
-        // chokidar
-        //   .watch(
-        //     [
-        //       path.resolve(config.src, "../**/*.php"), // WordPress
-        //       path.resolve(config.src, `../${config.contentBase}/*.html`), // Jekyll
-        //     ],
-        //     {
-        //       ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
-        //       ignoreInitial: true,
-        //       ignorePermissionErrors: true,
-        //       usePolling,
-        //       interval: pollInterval,
-        //     }
-        //   )
-        //   .on("all", (event, changedPath) => {
-        //     const basePath = path.resolve(config.src, "..");
-        //     const relPath = path.relative(basePath, changedPath);
-        //     console.log(
-        //       "Reload triggered by",
-        //       chalk.bold.yellow(event),
-        //       "event in",
-        //       chalk.green(relPath)
-        //     );
-
-        //     server.sendMessage(server.sockets, "content-changed");
-        //   });
+        return middlewares;
       },
 
       watchFiles: {
@@ -500,19 +472,9 @@ module.exports = async (env, argv) => {
                 config.src + "/{blocks,fonts,js,sass}/**",
               ],
             },
-            // filter: (copyPath) => {
-            //   console.log({ copyPath });
-            //   return true;
-            // },
           },
         ],
         options: { concurrency: 30 },
-      }),
-
-      new ImageMinimizerPlugin({
-        minimizerOptions: {
-          plugins: ImageminPlugins(isProduction),
-        },
       }),
 
       new DependencyManifestPlugin({
@@ -541,6 +503,16 @@ module.exports = async (env, argv) => {
         // include all types of chunks
         chunks: "all",
       },
+      minimizer: [
+        new ImageMinimizerPlugin({
+          minimizer: {
+            implementation: ImageMinimizerPlugin.imageminMinify,
+            options: {
+              plugins: ImageminPlugins(isProduction),
+            },
+          },
+        }),
+      ],
     },
   };
 };
