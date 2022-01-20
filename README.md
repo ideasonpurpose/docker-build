@@ -185,6 +185,12 @@ The **zip.mjs** script can be debugged in VS Code using the **Debug zip.mjs** la
 
 This toolset is installed with our [Docker-based WordPress development environments][docker-wordpress-dev].
 
+## &nbsp;
+
+#### Brought to you by IOP
+
+<a href="https://www.ideasonpurpose.com"><img src="https://raw.githubusercontent.com/ideasonpurpose/ideasonpurpose/master/IOP_monogram_circle_512x512_mint.png" height="44" align="top" alt="IOP Logo"></a><img src="https://raw.githubusercontent.com/ideasonpurpose/ideasonpurpose/master/spacer.png" align="middle" width="4" height="54"> This project is actively developed and used in production at <a href="https://www.ideasonpurpose.com">Ideas On Purpose</a>.
+
 [sass-loader]: https://webpack.js.org/loaders/sass-loader/
 [libsass]: https://github.com/sass/node-sass
 [dart-sass]: https://github.com/sass/dart-sass
