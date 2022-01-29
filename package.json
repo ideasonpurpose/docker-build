@@ -84,6 +84,7 @@
     "pretty-hrtime": "^1.0.3",
     "replacestream": "^4.0.3",
     "sass": "^1.49.0",
+    "sass-embedded": "^1.0.0-rc.1",
     "sass-loader": "^12.4.0",
     "source-map-explorer": "^2.5.2",
     "style-loader": "^3.3.1",

@@ -48,12 +48,13 @@ RUN apt-get update -qq \
       # nasm
 
 # Install the dart-sass binary, because why not?
+# https://github.com/sass/dart-sass/releases/
 RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
       ca-certificates \
       curl \
     && rm -rf /var/lib/apt/lists/*
-RUN curl -L https://github.com/sass/dart-sass/releases/download/1.47.0/dart-sass-1.47.0-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
+RUN curl -L https://github.com/sass/dart-sass/releases/download/1.49.0/dart-sass-1.49.0-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
     && tar -C /tmp -xvf /tmp/dart-sass.tar.gz \
     && mv /tmp/dart-sass/sass /usr/local/bin/sass \
     && rm -rf /tmp/dart-sass*

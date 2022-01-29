@@ -65,6 +65,13 @@ test("Check Sass implementations", () => {
   config = { sass: "node" };
   expect(buildConfig({ config })).toHaveProperty("sass", false);
 
+  config = { sass: "sass-embedded" };
+  expect(buildConfig({ config })).toHaveProperty("sass", 'sass-embedded');
+
+  config = { sass: "embedded" };
+  expect(buildConfig({ config })).toHaveProperty("sass", 'sass-embedded');
+
+
   expect(buildConfig({ config: {} })).toHaveProperty("sass", "sass");
 });
 
