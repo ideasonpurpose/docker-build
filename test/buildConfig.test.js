@@ -1,15 +1,6 @@
 const defaultConfig = require("../default.config.js");
 const buildConfig = require("../lib/buildConfig.js");
 
-const isIP = require("is-ip");
-
-test("check address", () => {
-  expect(isIP("12.22.11.2")).toBe(true);
-  expect(isIP("111.2.22.44")).toBe(true);
-  expect(isIP("312.22.11.2")).toBe(false);
-  expect(isIP("22.11.2")).toBe(false);
-});
-
 test("Defaults with no config file", () => {
   expect(buildConfig()).toHaveProperty("src");
   expect(buildConfig()).toHaveProperty("dist");
