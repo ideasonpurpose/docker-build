@@ -166,6 +166,8 @@ docker build . --tag ideasonpurpose/docker-build:dev
 
 Tooling can be used outside of Docker by creating a sibling `site` directory alongside the checkout of this project. For existing projects, set the `NAME` envvar to the theme name before the command like this: `NAME=example-theme npm run webpack`.
 
+Also note that `NODE_ENV` will default to `development` so be sure to set it to `production` when testing builds: `NAME=example-theme NODE_ENV=production npm run webpack`
+
 ### Debugging webpack
 
 It's possible to debug webpack inside the container by calling `npm run start:debug` instead of the regular `start` command. The build tools will start and report to be listening on port 9229, like this:
