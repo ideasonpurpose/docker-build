@@ -2,7 +2,6 @@
 
 const path = require("path").posix;
 const { statSync } = require("fs");
-// const { resolve } = require("dns").promises;
 
 const webpack = require("webpack");
 
@@ -10,7 +9,6 @@ const { cosmiconfigSync } = require("cosmiconfig");
 
 const chalk = require("chalk");
 
-// const chokidar = require("chokidar");
 const devserverProxy = require("./lib/devserver-proxy");
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -474,7 +472,7 @@ module.exports = async (env, argv) => {
             },
           },
         ],
-        options: { concurrency: 30 },
+        options: { concurrency: 50 },
       }),
 
       new DependencyManifestPlugin({
