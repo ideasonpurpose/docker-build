@@ -79,4 +79,6 @@ const defaultConfig = {
   proxy: 'wordpress',
 };
 
-module.exports = defaultConfig;
+// module.exports = defaultConfig;
+
+export default defaultConfig;

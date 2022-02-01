@@ -1,5 +1,19 @@
-const defaultConfig = require("../default.config.js");
-const buildConfig = require("../lib/buildConfig.js");
+import { jest } from "@jest/globals";
+
+jest.useFakeTimers();
+
+import { posix as path } from "path";
+
+import buildConfig from "../lib/buildConfig.js";
+
+// beforeEach(() => {
+//   // console.log = jest.fn();
+// });
+
+afterEach(() => {
+  jest.clearAllMocks();
+  // mockResolve.mockResolvedValue(["11.22.33.44"]);
+});
 
 test("Defaults with no config file", () => {
   expect(buildConfig()).toHaveProperty("src");
@@ -66,11 +80,10 @@ test("Check Sass implementations", () => {
   expect(buildConfig({ config })).toHaveProperty("sass", false);
 
   config = { sass: "sass-embedded" };
-  expect(buildConfig({ config })).toHaveProperty("sass", 'sass-embedded');
+  expect(buildConfig({ config })).toHaveProperty("sass", "sass-embedded");
 
   config = { sass: "embedded" };
-  expect(buildConfig({ config })).toHaveProperty("sass", 'sass-embedded');
-
+  expect(buildConfig({ config })).toHaveProperty("sass", "sass-embedded");
 
   expect(buildConfig({ config: {} })).toHaveProperty("sass", "sass");
 });
@@ -100,12 +113,22 @@ test("merge transpiled dependencies", () => {
   );
 });
 
-test("Check src path doesn't exist", () => {
-  let config;
-  console.log = jest.fn(); // mock console.log
+test("Check src path exists", () => {
+  const logSpy = jest.spyOn(console, "log");
+  const src = path.dirname(new URL(import.meta.url).pathname);
 
-  config = { src: "./path/to/theme" };
+  let config = { src };
+  expect(buildConfig({ config })).toHaveProperty("src");
+  expect(logSpy).not.toHaveBeenCalled();
+});
+
+test("Check src path doesn't exist", () => {
+  const logSpy = jest.spyOn(console, "log");
+
+  let config = { src: "./path/to/theme" };
   expect(buildConfig({ config })).toHaveProperty("src");
   expect(buildConfig({ config }).src).toMatch(/site\/path\/to\/theme$/);
-  expect(console.log.mock.calls[0][0]).toMatch(/does not exist.$/);
+  expect(logSpy).toHaveBeenLastCalledWith(
+    expect.stringContaining("does not exist")
+  );
 });

@@ -1,91 +1,154 @@
-const fs = require("fs");
+import { jest } from "@jest/globals";
 
-const mockResolve = jest.fn().mockResolvedValue(["11.22.33.44"]);
-jest.mock("dns", () => {
-  return { promises: { resolve: mockResolve } };
+// jest.useFakeTimers();
+
+import fs from "fs";
+import dns from "dns";
+
+import devserverProxy from "../lib/devserver-proxy.js";
+
+const expected = "11.22.33.44";
+
+// });
+
+beforeEach(() => {
+  jest.spyOn(dns, "promises", "get").mockImplementation(() => {
+    return { resolve: async () => [expected] };
+  });
 });
-require("dns");
-
-const devserverProxy = require("../lib/devserver-proxy.js");
 
 afterEach(() => {
   jest.clearAllMocks();
-  mockResolve.mockResolvedValue(["11.22.33.44"]);
+  jest.resetAllMocks();
+  // mockResolve.mockResolvedValue(["11.22.33.44"]);
 });
+
+// disabled because we're now mocking the library
+// test.skip("dns works normally", async () => {
+//   const actual = await dns.promises.resolve("apple.com");
+//   expect(actual[0]).toMatch(/^17\.253/);
+// });
+
+// test("mock dns.promises.resolve", async () => {
+//   const actual = await dns.promises.resolve("hello");
+//   expect(actual).toBe(expected);
+// });
+
+// test("resolve from file", async () => {
+//   const actual = await resolveFromFile("wordpress");
+//   expect(actual).toBe(expected);
+// });
 
 test("Notify and redirect legacy devserver-proxy-token value", async () => {
-  console.log = jest.fn();
   let proxy =
     "http://devserver-proxy-token--d939bef2a41c4aa154ddb8db903ce19fff338b61";
-  expect(await devserverProxy({ proxy })).toHaveProperty("proxy.**.target");
-  expect(mockResolve).toHaveBeenLastCalledWith("wordpress");
-});
 
-test("Send legacy token where there's no wordpress service", async () => {
-  console.log = jest.fn();
-  let proxy =
-    "http://devserver-proxy-token--d939bef2a41c4aa154ddb8db903ce19fff338b61";
-  mockResolve.mockRejectedValueOnce(new Error());
-  expect(await devserverProxy({ proxy })).toStrictEqual({});
-  expect(mockResolve).toHaveBeenLastCalledWith("wordpress");
-});
+  const logSpy = jest.spyOn(console, "log");
+  const actual = await devserverProxy({ proxy });
 
-test("Test proxy settings", async () => {
-  let proxy;
-
-  proxy = "wordpress";
-  expect(await devserverProxy({ proxy })).toHaveProperty("proxy.**.target");
-  expect(mockResolve).toBeCalledWith("wordpress");
-
-  proxy = "bad_name";
-  mockResolve.mockRejectedValueOnce(new Error());
-  expect(await devserverProxy({ proxy })).toStrictEqual({});
-  expect(mockResolve).toHaveBeenLastCalledWith("bad_name");
-
-  proxy = false;
-  expect(await devserverProxy({ proxy })).toStrictEqual({});
-
-  proxy = "google.com";
-  expect(await devserverProxy({ proxy })).toHaveProperty("proxy.**.target");
-  expect(mockResolve).toHaveBeenLastCalledWith("google.com");
-});
-
-test("proxy is bare IP address", async () => {
-  expect(await devserverProxy({ proxy: "4.3.2.1" })).toHaveProperty(
-    "proxy.**.target",
-    "http://4.3.2.1"
+  expect(actual).toHaveProperty("proxy");
+  expect(logSpy).toHaveBeenCalledWith(
+    expect.stringContaining("devserver-proxy-token")
   );
 });
 
-test("Proxy is a boolean, true should never happen, false fails", async () => {
+test("Send legacy token where there's no wordpress service", async () => {
+  jest.spyOn(dns, "promises", "get").mockImplementation(() => {
+    // console.log("ONLY ONCE");
+    return { resolve: () => new Promise((resolve, reject) => reject()) };
+  });
+
+  let proxy =
+    "http://devserver-proxy-token--d939bef2a41c4aa154ddb8db903ce19fff338b61";
+
+  const logSpy = jest.spyOn(console, "log");
+  const actual = await devserverProxy({ proxy });
+
+  expect(actual).toStrictEqual({});
+  // expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("ONCE"));
+  expect(logSpy).toHaveBeenCalledWith(
+    expect.stringContaining("devserver-proxy-token")
+  );
+});
+
+test("prefix http onto string", async () => {
+  jest.spyOn(dns, "promises", "get").mockImplementation(() => {
+    return {
+      resolve: () => new Promise((resolve, reject) => resolve(["fake-url"])),
+    };
+  });
+
+  let proxy = "placeholder string";
+  const actual = await devserverProxy({ proxy });
+  expect(actual).toHaveProperty("proxy.**.target", "http://fake-url");
+});
+
+test("fail to prefix http onto string", async () => {
+  jest.spyOn(dns, "promises", "get").mockImplementation(() => {
+    return {
+      resolve: () => new Promise((resolve, reject) => reject()),
+    };
+  });
+
+  let proxy = "placeholder string";
+  const actual = await devserverProxy({ proxy });
+  expect(actual).toStrictEqual({});
+});
+
+test("Test proxy settings", async () => {
+  let proxy = "wordpress";
+  const actual = await devserverProxy({ proxy });
+  expect(actual).toHaveProperty("proxy.**.target");
+});
+
+test("proxy is bare IP address", async () => {
+  let proxy = "4.3.2.1";
+  const actual = await devserverProxy({ proxy });
+  expect(actual).toHaveProperty("proxy.**.target", "http://4.3.2.1");
+});
+
+test("Proxy is a boolean, both should fail", async () => {
   expect(await devserverProxy({ proxy: true })).toStrictEqual({});
   expect(await devserverProxy({ proxy: false })).toStrictEqual({});
 });
 
 test("test the returned proxy onError handler", async () => {
-  console.log = jest.fn(); // mock console.log
+  let proxy = "wordpress";
+  const logSpy = jest.spyOn(console, "log");
+  const actual = await devserverProxy({ proxy });
 
-  const { proxy } = await devserverProxy({ proxy: "wordpress" });
-  const route = proxy["**"];
-  let err = new Error("boo");
+  expect(actual).toHaveProperty("proxy.**");
+
+  const route = actual.proxy["**"];
+  let err = new Error("boom");
   err.code = "ECONNRESET";
   route.onError(err);
-  expect(console.log.mock.calls[0][0]).toMatch(/ECONNRESET/);
+
+  expect(route).toHaveProperty("onError");
+  expect(logSpy).toHaveBeenLastCalledWith(
+    expect.stringContaining("ECONNRESET")
+  );
 
   const writeHead = jest.fn();
   const end = jest.fn();
   const res = { writeHead, end };
   const req = { url: "url" };
-  route.onError(new Error("guh"), req, res);
 
-  expect(console.log.mock.calls[1][0]).toMatch(/PROXY ERROR/);
+  err = new Error("boom-again ");
+  err.code = "Unknown Error Code";
+  route.onError(err, req, res);
+
+  expect(logSpy.mock.calls[1][0]).toMatch(/^PROXY ERROR/);
   expect(end.mock.calls[0][0]).toMatch(/^Webpack DevServer/);
 });
 
 test("test proxy's onProxyRes handler", async () => {
-  const { proxy } = await devserverProxy({ proxy: "https://example.com" });
-  const route = proxy["**"];
-  const mockProxyRes = fs.createReadStream(__filename);
+  let proxy = "https://example.com";
+  const logSpy = jest.spyOn(console, "log");
+  const actual = await devserverProxy({ proxy });
+
+  const route = actual.proxy["**"];
+  const mockProxyRes = fs.createReadStream(new URL(import.meta.url));
 
   mockProxyRes.headers = {
     headerKey: "value",
@@ -121,10 +184,14 @@ test("test proxy's onProxyRes handler", async () => {
 });
 
 test("test proxy's onProxyRes handler onEnd passthrough", async () => {
-  const { proxy } = await devserverProxy({ proxy: "https://example.com" });
-  const route = proxy["**"];
-  const mockProxyRes = fs.createReadStream(__filename);
+  let proxy = "https://example.com";
+  // const logSpy = jest.spyOn(console, "log");
+  const actual = await devserverProxy({ proxy });
 
+  const route = actual.proxy["**"];
+  const mockProxyRes = fs.createReadStream(new URL(import.meta.url));
+
+  console.log("hello");
   mockProxyRes.headers = {
     headerKey: "value",
     host: "example.com",
@@ -153,9 +220,12 @@ test("test proxy's onProxyRes handler onEnd passthrough", async () => {
 });
 
 test("proxy should rewrite http:// and http:\\/\\/", async () => {
-  const { proxy } = await devserverProxy({ proxy: "wordpress" });
-  const route = proxy["**"];
-  const mockProxyRes = fs.createReadStream(__filename);
+  let proxy = "wordpress";
+
+  const logSpy = jest.spyOn(console, "log");
+  const actual = await devserverProxy({ proxy });
+  const route = actual.proxy["**"];
+  const mockProxyRes = fs.createReadStream(new URL(import.meta.url));
 
   mockProxyRes.headers = {
     headerKey: "value",

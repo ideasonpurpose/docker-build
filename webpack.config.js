@@ -1,30 +1,38 @@
 // TODO: Recognize project types and adjust output? WordPress? Jekyll?
 
-const path = require("path").posix;
-const { statSync } = require("fs");
+import { posix as path } from "path";
+// import { dirname } from "path";
+// import { fileURLToPath } from "url";
 
-const webpack = require("webpack");
+import { statSync } from "fs";
+import { cosmiconfigSync } from "cosmiconfig";
+import chalk from "chalk";
 
-const { cosmiconfigSync } = require("cosmiconfig");
+import devserverProxy from "./lib/devserver-proxy.js";
 
-const chalk = require("chalk");
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import CopyPlugin from "copy-webpack-plugin";
+import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import ImageMinimizerPlugin from "image-minimizer-webpack-plugin";
 
-const devserverProxy = require("./lib/devserver-proxy");
+import DependencyManifestPlugin from "./lib/DependencyManifestPlugin.js";
+import AfterDoneReporterPlugin from "./lib/AfterDoneReporterPlugin.js";
+import WatchRunReporterPlugin from "./lib/WatchRunReporterPlugin.js";
+import ImageminPlugins from "./lib/ImageminPlugins.js";
 
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+import autoprefixer from "autoprefixer";
+import cssnano from "cssnano";
 
-const CopyPlugin = require("copy-webpack-plugin");
-const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
+import * as nodeSass from "node-sass";
+import * as dartSass from "sass";
 
-const DependencyManifestPlugin = require("./lib/DependencyManifestPlugin.js");
-const AfterDoneReporterPlugin = require("./lib/AfterDoneReporterPlugin");
-const WatchRunReporterPlugin = require("./lib/WatchRunReporterPlugin");
-const ImageminPlugins = require("./lib/ImageminPlugins.js");
 
-const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
-
-const autoprefixer = require("autoprefixer");
-const cssnano = require("cssnano");
+// console.log(import.meta, __filename, __dirname);
+// console.log({
+// //   _dirname: path.resolve(__dirname, "../site"),
+// //   meta_url: path.resolve(import.meta.url, "../site"),
+//   url: new URL("../site", import.meta.url)
+// });
 
 /**
  * Force `mode: production` when running the analyzer
@@ -35,41 +43,56 @@ if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
 const isProduction = process.env.NODE_ENV === "production";
 
 const stats = {
-  all: false,
+  preset: 'normal',
+  cachedAssets: false,
   assets: true,
-  builtAt: true,
-  cachedModules: false,
-  children: false, // Adds a bunch of blank lines to stats output
-  chunkGroups: false,
-  chunkModules: false,
-  chunkOrigins: false,
-  chunks: false,
-  colors: true,
-  depth: false,
-  env: true,
-  // errorDetails: "auto",
-  errorDetails: true,
-  errors: true,
-  errorStack: true,
-  excludeAssets: [/hot-update/, /_sock-/],
+  // assetsSpace: 12,
+  // context: new URL( import.meta.url).pathname,
+  // all: false,
+  // assets: true,
+  // builtAt: true,
+  // cachedModules: true,
+  // children: false, // Adds a bunch of blank lines to stats output
+  // chunkGroups: false,
+  // chunkModules: false,
+  // chunkOrigins: true,
+  // chunkRelations: true,
+  // chunks: false,
+  // colors: true,
+  // depth: false,
+  // env: true,
+  // orphanModules: false,
+  // dependentModules: true,
+  modules: false,
   groupAssetsByChunk: true,
+  entrypoints: true,
+  // // errorDetails: "auto",
+  children: false,
+  // errorDetails: true,
+  // errors: true,
+  // errorStack: true,
+  // excludeAssets: [/hot-update/, /_sock-/],
+  // groupAssetsByChunk: true,
   logging: "info",
-  loggingTrace: false,
+  // optimizationBailout: true,
+  // loggingTrace: false,
   performance: true,
   reasons: true,
-  relatedAssets: false,
+  // relatedAssets: false,
   timings: true,
   version: true,
   warnings: true,
 };
 
-const siteDir = path.resolve(__dirname, "../site");
+// const siteDir = path.resolve(__dirname, "../site");
+const siteDir =  new URL("../site", import.meta.url).pathname;
 const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir);
 
-const buildConfig = require("./lib/buildConfig.js");
+import buildConfig from "./lib/buildConfig.js";
 
 const config = buildConfig(configFile);
+
 
 /**
  * TODO: Is this used?
@@ -104,7 +127,7 @@ const pollInterval = Math.max(
 //   : config.devtool || "eval-cheap-source-map";
 const devtool = config.devtool || false;
 
-module.exports = async (env, argv) => {
+export default async (env, argv) => {
   return {
     module: {
       rules: [
@@ -194,7 +217,9 @@ module.exports = async (env, argv) => {
             {
               loader: "sass-loader",
               options: {
-                implementation: require(config.sass),
+                // implementation: require(config.sass),
+                // implementation: config.sass == "sass" ? dartSass : nodeSass,
+                implementation: config.sass,
                 sourceMap: !isProduction,
                 // sourceMap: true,
                 webpackImporter: false,
@@ -270,7 +295,8 @@ module.exports = async (env, argv) => {
     entry: config.entry,
 
     output: {
-      path: path.resolve(__dirname, config.dist),
+      // path: path.resolve(__dirname, config.dist),
+      path: new URL(config.dist, import.meta.url).pathname,
       // pathinfo: false,
       /**
        * Primary output filenames SHOULD NOT include hashes in development
@@ -503,6 +529,8 @@ module.exports = async (env, argv) => {
       },
       minimizer: [
         new ImageMinimizerPlugin({
+          severityError: "error",
+
           minimizer: {
             implementation: ImageMinimizerPlugin.imageminMinify,
             options: {

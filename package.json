@@ -9,6 +9,7 @@
   "contributors": [
     "Joe Maller <joe@ideasonpurpose.com>"
   ],
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "analyze": "WEBPACK_BUNDLE_ANALYZER=true webpack",
@@ -25,8 +26,8 @@
     "preview": "node browsersync.js",
     "start": "webpack serve",
     "start:debug": "node --inspect=0.0.0.0 node_modules/.bin/webpack serve",
-    "test": "jest",
-    "test:watch": "jest --watch",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules npx jest --watch",
     "version": "version-everything && auto-changelog && git add -u",
     "watch": "webpack --progress --profile --watch --color --display-error-details",
     "webpack": "node --trace-deprecation node_modules/webpack/bin/webpack.js",
@@ -37,6 +38,11 @@
   "jest": {
     "clearMocks": true,
     "collectCoverage": true,
+    "moduleNameMapper": {
+      "#(.*)": "<rootDir>/node_modules/$1"
+    },
+    "testTimeout": 500,
+    "transform": {},
     "verbose": true
   },
   "dependencies": {
@@ -53,13 +59,13 @@
     "body-parser": "^1.19.1",
     "browser-sync": "^2.27.7",
     "caniuse-lite": "^1.0.30001304",
-    "chalk": "^4.1.2",
-    "copy-webpack-plugin": "^10.2.3",
+    "chalk": "^5.0.0",
+    "copy-webpack-plugin": "^10.2.4",
     "core-js": "^3.20.3",
     "cosmiconfig": "^7.0.1",
     "css-loader": "^6.5.1",
     "cssnano": "^5.0.16",
-    "dotenv": "^14.3.2",
+    "dotenv": "^15.0.0",
     "esbuild-loader": "^2.18.0",
     "filesize": "^8.0.7",
     "fs-extra": "^10.0.0",
@@ -73,7 +79,7 @@
     "imagemin-optipng": "^8.0.0",
     "imagemin-pngquant": "^9.0.2",
     "imagemin-svgo": "^10.0.1",
-    "is-ip": "^3.1.0",
+    "is-ip": "^4.0.0",
     "is-text-path": "^2.0.0",
     "lodash": "^4.17.21",
     "mini-css-extract-plugin": "^2.5.3",
@@ -83,14 +89,14 @@
     "postcss-loader": "^6.2.1",
     "pretty-hrtime": "^1.0.3",
     "replacestream": "^4.0.3",
-    "sass": "^1.49.0",
+    "sass": "^1.49.4",
     "sass-embedded": "^1.0.0-rc.1",
     "sass-loader": "^12.4.0",
     "source-map-explorer": "^2.5.2",
     "style-loader": "^3.3.1",
     "svgo": "^2.6.1",
     "version-everything": "^0.7.4",
-    "webpack": "^5.67.0",
+    "webpack": "^5.68.0",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.2",
     "webpack-dev-middleware": "^5.3.0",
