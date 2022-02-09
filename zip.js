@@ -12,7 +12,7 @@ import ora from "ora";
 import replaceStream from "replacestream";
 
 import buildConfig from "./lib/buildConfig.js";
-import { prettierHrtime } from "./lib/prettier-hrtime.mjs";
+import { prettierHrtime } from "./lib/prettier-hrtime.js";
 
 /**
  * This is usually run from the Docker image, which will always
