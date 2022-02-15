@@ -6,8 +6,9 @@
 # Helpful references:
 #   - https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/
 
-# Docker Hub node images:  https://hub.docker.com/_/node
-FROM node:16.13.2-buster-slim
+# Docker Hub node images:
+# https://hub.docker.com/_/node
+FROM node:16.14.0-buster-slim
 # FROM node:14-buster-slim
 
 LABEL version="0.10.0"
@@ -54,7 +55,7 @@ RUN apt-get update -qq \
       ca-certificates \
       curl \
     && rm -rf /var/lib/apt/lists/*
-RUN curl -L https://github.com/sass/dart-sass/releases/download/1.49.0/dart-sass-1.49.0-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
+RUN curl -L https://github.com/sass/dart-sass/releases/download/1.49.7/dart-sass-1.49.7-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
     && tar -C /tmp -xvf /tmp/dart-sass.tar.gz \
     && mv /tmp/dart-sass/sass /usr/local/bin/sass \
     && rm -rf /tmp/dart-sass*
