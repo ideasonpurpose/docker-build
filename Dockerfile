@@ -55,7 +55,7 @@ RUN apt-get update -qq \
       ca-certificates \
       curl \
     && rm -rf /var/lib/apt/lists/*
-RUN curl -L https://github.com/sass/dart-sass/releases/download/1.49.7/dart-sass-1.49.7-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
+RUN curl -L https://github.com/sass/dart-sass/releases/download/1.49.9/dart-sass-1.49.9-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
     && tar -C /tmp -xvf /tmp/dart-sass.tar.gz \
     && mv /tmp/dart-sass/sass /usr/local/bin/sass \
     && rm -rf /tmp/dart-sass*
