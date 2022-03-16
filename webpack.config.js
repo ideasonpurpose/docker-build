@@ -26,7 +26,6 @@ import cssnano from "cssnano";
 import * as nodeSass from "node-sass";
 import * as dartSass from "sass";
 
-
 // console.log(import.meta, __filename, __dirname);
 // console.log({
 // //   _dirname: path.resolve(__dirname, "../site"),
@@ -43,7 +42,7 @@ if (process.env.WEBPACK_BUNDLE_ANALYZER) process.env.NODE_ENV = "production";
 const isProduction = process.env.NODE_ENV === "production";
 
 const stats = {
-  preset: 'normal',
+  preset: "normal",
   cachedAssets: false,
   assets: true,
   // assetsSpace: 12,
@@ -85,7 +84,7 @@ const stats = {
 };
 
 // const siteDir = path.resolve(__dirname, "../site");
-const siteDir =  new URL("../site", import.meta.url).pathname;
+const siteDir = new URL("../site", import.meta.url).pathname;
 const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir);
 
@@ -93,17 +92,10 @@ import buildConfig from "./lib/buildConfig.js";
 
 const config = buildConfig(configFile);
 
-
 /**
  * TODO: Is this used?
  */
 // const projectDir = path.resolve(siteDir, config.src, "../");
-
-/**
- * This changes the reported port for websockets, so devserver updates
- * work even if the docker listening port is changed via npm config.
- */
-const sockPort = parseInt(process.env.PORT || config.port);
 
 /**
  * `usePolling` is a placeholder, try and detect native Windows Docker mounts
@@ -322,12 +314,16 @@ export default async (env, argv) => {
       setupExitSignals: true,
 
       compress: config.devServerCompress || false, // TODO: True by default in devServer v4, exposed via config.devServerCompress to test speed impact
-      port: config.port,
+      port: 8080, // hardcoded because Docker bridges to this port
       hot: true,
       client: {
         logging: "info", // TODO: New, is this ok?
         overlay: { warnings: true, errors: true },
-        // progress: true,   // TODO: New, is this ok?
+        progress: true, // TODO: New, is this ok?
+        reconnect: 30,
+        webSocketURL: {
+          port: parseInt(process.env.PORT), // external port, so websockets hit the right endpoint
+        },
       },
       static: {
         // TODO: Should contentBase be `false` when there's a proxy?
@@ -510,7 +506,8 @@ export default async (env, argv) => {
 
       new AfterDoneReporterPlugin({
         echo: env && env.WEBPACK_SERVE,
-        message: "Dev site " + chalk.blue.bold(`http://localhost:${sockPort}`),
+        message:
+          "Dev site " + chalk.blue.bold(`http://localhost:${process.env.PORT}`),
       }),
 
       new BundleAnalyzerPlugin({
