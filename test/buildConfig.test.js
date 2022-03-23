@@ -6,23 +6,33 @@ import { posix as path } from "path";
 
 import buildConfig from "../lib/buildConfig.js";
 
-// beforeEach(() => {
-//   // console.log = jest.fn();
-// });
+beforeEach(() => {
+  console.log = jest.fn();
+});
+
+const filepath = process.cwd() + "/fake.file";
 
 afterEach(() => {
   jest.clearAllMocks();
-  // mockResolve.mockResolvedValue(["11.22.33.44"]);
 });
 
 test("Defaults with no config file", () => {
-  expect(buildConfig()).toHaveProperty("src");
-  expect(buildConfig()).toHaveProperty("dist");
-  expect(buildConfig()).toHaveProperty("entry");
-  expect(buildConfig()).toHaveProperty("manifestFile");
-  expect(buildConfig()).toHaveProperty("proxy");
-  expect(buildConfig()).toHaveProperty("sass");
-  expect(buildConfig()).toHaveProperty("transpileDependencies");
+  const logSpy = jest.spyOn(console, "log");
+
+  const builtConfig = buildConfig();
+
+  expect(builtConfig).toHaveProperty("src");
+  expect(builtConfig).toHaveProperty("dist");
+  expect(builtConfig).toHaveProperty("entry");
+  expect(builtConfig).toHaveProperty("manifestFile");
+  expect(builtConfig).toHaveProperty("proxy");
+  expect(builtConfig).toHaveProperty("sass");
+  expect(builtConfig).toHaveProperty("transpileDependencies");
+
+  expect(logSpy).toHaveBeenCalledWith(
+    expect.any(String),
+    expect.stringContaining("does not exist")
+  );
 });
 
 test("default proxy value", () => {
@@ -65,10 +75,12 @@ test("Entry object transformations", () => {
 });
 
 test("Check Sass implementations", () => {
+  const logSpy = jest.spyOn(console, "log");
+
   let config;
 
   config = { sass: "dart-sass" };
-  expect(buildConfig({ config })).toHaveProperty("sass", "sass");
+  expect(buildConfig({ config })).toHaveProperty("sass", "sass-embedded");
 
   config = { sass: "sass" };
   expect(buildConfig({ config })).toHaveProperty("sass", "sass");
@@ -86,6 +98,11 @@ test("Check Sass implementations", () => {
   expect(buildConfig({ config })).toHaveProperty("sass", "sass-embedded");
 
   expect(buildConfig({ config: {} })).toHaveProperty("sass", "sass");
+
+  expect(logSpy).toHaveBeenCalledWith(
+    expect.any(String),
+    expect.stringContaining("does not exist")
+  );
 });
 
 test("merge transpiled dependencies", () => {
@@ -125,10 +142,40 @@ test("Check src path exists", () => {
 test("Check src path doesn't exist", () => {
   const logSpy = jest.spyOn(console, "log");
 
-  let config = { src: "./path/to/theme" };
-  expect(buildConfig({ config })).toHaveProperty("src");
-  expect(buildConfig({ config }).src).toMatch(/site\/path\/to\/theme$/);
+  let config = { config: { src: "./path/to/theme" } };
+  const result = buildConfig(config);
+  expect(result).toHaveProperty("src");
+  expect(result.src).toMatch(/site\/path\/to\/theme$/);
   expect(logSpy).toHaveBeenLastCalledWith(
+    expect.any(String),
     expect.stringContaining("does not exist")
+  );
+});
+
+test("check for NAME envvar mismatch", () => {
+  const logSpy = jest.spyOn(console, "log");
+  process.env.NAME = "ENV_NAME";
+  const configFile = {
+    config: { src: `./wp-content/themes/${process.env.NAME}/src` },
+    filepath: path.resolve("./test/fixtures/config/ideasonpurpose.config.js"),
+  };
+  buildConfig(configFile);
+  expect(logSpy).toHaveBeenCalledWith(
+    expect.any(String),
+    expect.stringContaining("WARNING")
+  );
+});
+
+test("coverage: NAME envvar matches package.json", () => {
+  const logSpy = jest.spyOn(console, "log");
+  process.env.NAME = "fixture-package";
+  const configFile = {
+    config: { src: `./wp-content/themes/${process.env.NAME}/src` },
+    filepath: path.resolve("./test/fixtures/config/ideasonpurpose.config.js"),
+  };
+  buildConfig(configFile);
+  expect(logSpy).not.toHaveBeenCalledWith(
+    expect.any(String),
+    expect.stringContaining("WARNING")
   );
 });

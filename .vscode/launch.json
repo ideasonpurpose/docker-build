@@ -6,21 +6,15 @@
   "configurations": [
     {
       "command": "npm run zip",
-      "name": "Debug zip.mjs",
+      "name": "Debug zip.js",
       "request": "launch",
-      "type": "node-terminal",
-      "env": {
-        "NAME": "iop"
-      }
+      "type": "node-terminal"
     },
     {
       "command": "npm run build",
       "name": "Debug webpack",
       "request": "launch",
-      "type": "node-terminal",
-      "env": {
-        "NAME": "iop"
-      }
+      "type": "node-terminal"
     }
   ]
 }

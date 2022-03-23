@@ -22,7 +22,6 @@
     "devserver": "npm run start",
     "env": "env",
     "explore": "source-map-explorer",
-    "node-sass": "node-sass --include-path /usr/src/site/wp-content/themes/iop-njhi/src/sass /usr/src/site/wp-content/themes/iop-njhi/src/sass/main.scss",
     "preview": "node browsersync.js",
     "start": "webpack serve",
     "start:debug": "node --inspect=0.0.0.0 node_modules/.bin/webpack serve",
@@ -33,7 +32,7 @@
     "webpack": "node --trace-deprecation node_modules/webpack/bin/webpack.js",
     "webpack:profile": "webpack --profile --progress --json > /usr/src/site/webpack/stats.json",
     "zip": "node zip.js",
-    "zip:debug": "node --inspect-brk=0.0.0.0 zip.mjs"
+    "zip:debug": "node --inspect-brk=0.0.0.0 zip.js"
   },
   "jest": {
     "clearMocks": true,
@@ -60,6 +59,7 @@
     "browser-sync": "^2.27.9",
     "caniuse-lite": "^1.0.30001317",
     "chalk": "^5.0.1",
+    "cli-truncate": "^3.1.0",
     "copy-webpack-plugin": "^10.2.3",
     "core-js": "^3.21.1",
     "cosmiconfig": "^7.0.1",
@@ -84,7 +84,6 @@
     "lodash": "^4.17.21",
     "mini-css-extract-plugin": "^2.6.0",
     "node-sass": "^7.0.1",
-    "ora": "^6.1.0",
     "postcss": "^8.4.12",
     "postcss-loader": "^6.2.1",
     "pretty-hrtime": "^1.0.3",
@@ -93,6 +92,7 @@
     "sass-embedded": "^1.49.9",
     "sass-loader": "^12.6.0",
     "source-map-explorer": "^2.5.2",
+    "string-length": "^5.0.1",
     "style-loader": "^3.3.1",
     "svgo": "^2.6.1",
     "version-everything": "^0.7.4",

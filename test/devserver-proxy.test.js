@@ -15,6 +15,8 @@ beforeEach(() => {
   jest.spyOn(dns, "promises", "get").mockImplementation(() => {
     return { resolve: async () => [expected] };
   });
+
+  console.log = jest.fn();
 });
 
 afterEach(() => {
@@ -48,7 +50,9 @@ test("Notify and redirect legacy devserver-proxy-token value", async () => {
 
   expect(actual).toHaveProperty("proxy");
   expect(logSpy).toHaveBeenCalledWith(
-    expect.stringContaining("devserver-proxy-token")
+    expect.any(String),
+    expect.stringContaining("devserver-proxy-token"),
+    expect.any(String)
   );
 });
 
@@ -67,7 +71,9 @@ test("Send legacy token where there's no wordpress service", async () => {
   expect(actual).toStrictEqual({});
   // expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("ONCE"));
   expect(logSpy).toHaveBeenCalledWith(
-    expect.stringContaining("devserver-proxy-token")
+    expect.any(String),
+    expect.stringContaining("devserver-proxy-token"),
+    expect.any(String)
   );
 });
 
