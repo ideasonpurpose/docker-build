@@ -183,8 +183,10 @@ function finishReporter() {
     chalk.yellow("created in"),
     chalk.magenta(duration)
   );
+  console.log("⏳");
   console.log(
     "🚀 ",
     chalk.bold(`Remember to push to ${chalk.cyan("GitHub!")}`)
   );
+  console.log("✨");
 }
