@@ -1,5 +1,5 @@
 import url from "url";
-import { relative } from "path";
+import { dirname, relative } from "path";
 
 import { cosmiconfigSync } from "cosmiconfig";
 
@@ -25,10 +25,10 @@ const configFile = explorerSync.search(siteDir.pathname) || fallbackConfig;
 const configFileUrl = url.pathToFileURL(configFile.filepath);
 const config = buildConfig(configFile);
 
-const relPath = relative(configFile.filepath, config.dist);
+const relPath = relative(dirname(configFile.filepath), config.dist);
 
 console.log("🚮", chalk.yellow("Cleaning"), chalk.magenta(relPath));
-del([config.dist + "/*/"], { force: true }).then((result) => {
+del([config.dist + "/*/"], { force: true, dryRun: true }).then((result) => {
   const nfiles = result.length === 1 ? "1 file" : `${result.length} files`;
   console.log("✅", chalk.yellow("Done!"), chalk.gray(`(Removed ${nfiles})`));
 });
