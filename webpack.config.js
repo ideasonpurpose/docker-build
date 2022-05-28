@@ -26,6 +26,9 @@ import cssnano from "cssnano";
 import * as nodeSass from "node-sass";
 import * as dartSass from "sass";
 
+// Experimenting with this
+import DependencyExtractionWebpackPlugin from "@wordpress/dependency-extraction-webpack-plugin";
+
 // console.log(import.meta, __filename, __dirname);
 // console.log({
 // //   _dirname: path.resolve(__dirname, "../site"),
@@ -47,7 +50,7 @@ const stats = {
   assets: true,
   // assetsSpace: 12,
   // context: new URL( import.meta.url).pathname,
-  // all: false,
+  all: false,
   // assets: true,
   // builtAt: true,
   // cachedModules: true,
@@ -77,7 +80,7 @@ const stats = {
   // loggingTrace: false,
   performance: true,
   reasons: true,
-  // relatedAssets: false,
+  relatedAssets: true,
   timings: true,
   version: true,
   warnings: true,
@@ -359,13 +362,13 @@ export default async (env, argv) => {
             return false;
           }
 
-          if (/.+\.(svg|json|jpg|png)$/.test(filePath)) {
+          if (/.+\.(svg|json|php|jpg|png)$/.test(filePath)) {
             const fileStat = statSync(filePath, { throwIfNoEntry: false });
 
             /**
-             * Always write SVG and JSON files
+             * Always write SVG, PHP & JSON files
              */
-            if (/.+\.(svg|json)$/.test(filePath)) {
+            if (/.+\.(svg|json|php)$/.test(filePath)) {
               return true;
             } else {
               /**
@@ -496,6 +499,12 @@ export default async (env, argv) => {
         ],
         options: { concurrency: 50 },
       }),
+
+      /**
+       * Experimental
+       * @link https://developer.wordpress.org/block-editor/reference-guides/packages/packages-dependency-extraction-webpack-plugin/
+       */
+      new DependencyExtractionWebpackPlugin(),
 
       new DependencyManifestPlugin({
         writeManifestFile: true,

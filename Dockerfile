@@ -8,7 +8,7 @@
 
 # Docker Hub node images:
 # https://hub.docker.com/_/node
-FROM node:16.14.2-buster-slim
+FROM node:16.15.0-buster-slim
 # FROM node:14-buster-slim
 
 LABEL version="0.11.3"
