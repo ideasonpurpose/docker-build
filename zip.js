@@ -168,6 +168,11 @@ function finishReporter() {
     chalk.gray(`(Uncompressed: ${filesize(inBytes)})`)
   );
   console.log(
+    "👀 ",
+    chalk.yellow("Webpack Bundle Analyzer report:"),
+    chalk.magenta("webpack/stats/index.html"),
+  );
+  console.log(
     "📦 ",
     chalk.yellow("Created"),
     chalk.magenta(filesize(outBytes)),
