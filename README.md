@@ -2,7 +2,9 @@
 
 #### Version 0.12.0
 
-[![dockeri.co](https://dockeri.co/image/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)<br>
+<!--[![dockeri.co](https://dockeri.co/image/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)<br> -->
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)
 [![Push to Docker Hub](https://github.com/ideasonpurpose/docker-build/workflows/Push%20to%20Docker%20Hub/badge.svg)](https://github.com/ideasonpurpose/docker-build)
 [![Coverage Status](https://coveralls.io/repos/github/ideasonpurpose/docker-build/badge.svg?branch=master)](https://coveralls.io/github/ideasonpurpose/docker-build?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a6fabc9730a3b90b255c/maintainability)](https://codeclimate.com/github/ideasonpurpose/docker-build/maintainability)
@@ -18,8 +20,7 @@ module.exports = {
   src: "./src",
   dist: "./dist",
   entry: ["./js/index.js"],
-  publicPath: "/dist/",
-  proxy: null,
+  publicPath: "/assets/dist/",
 };
 ```
 
@@ -43,7 +44,7 @@ This is the public url path to the dist folder. Web browsers will reference our 
 
 #### `sass` (optional)
 
-Specify the Sass implementation to use. Used by [Sass-loader][]. Supports `node-sass` ([LibSass][]), `sass` ([Dart-sass][]) and `sass-embedded` ([embedded-host-node][]). Default: **`sass`**
+Specify the Sass implementation to use. Used by [Sass-loader][]. Supports `node-sass` ([LibSass][]), `sass` ([Dart-sass][]) and `sass-embedded` ([embedded-host-node][]). Default: **`sass-embedded`**
 
 #### `proxy` (optional)
 
@@ -52,6 +53,10 @@ When set, Webpack's devserver will proxy this server, replacing requested assets
 #### `transpileDependencies` (optional)
 
 A list NPM modules which should be transpiled by babel. Many useful packages on NPM ship es6 code which crashes on older browsers. List those modules here so they can be included in the transpilation pipeline.
+
+#### `devtool` (optional)
+
+This value is passed directly into the webpack config. Use it to experiment with different [source-map generation settings](https://webpack.js.org/configuration/devtool/).
 
 ### WordPress config
 
@@ -64,8 +69,7 @@ module.exports = {
   src: `./wp-content/themes/${pkg.name}/src`,
   dist: `./wp-content/themes/${pkg.name}/dist`,
   entry: ["./js/main.js", "./js/admin.js", "./js/editor.js"],
-  publicPath: "/_assets/dist/",
-  proxy: `${pkg.name}.test`,
+  publicPath: "/wp-content/themes/my-theme-name/dist/",
 };
 ```
 
@@ -110,8 +114,6 @@ $ docker run -p 8080:8080 --env NAME=iop-sscgf --env HOSTNAME=joes-mbp.local -v 
 
 ### Commands
 
-Known script commands can be executed using just their name, no need to prefix with `npm run`.
-
 #### `build`
 
 Runs a webpack production build. This will also generate a zipped snapshot. _(todo: does this work?)_
@@ -119,10 +121,6 @@ Runs a webpack production build. This will also generate a zipped snapshot. _(to
 #### `start`
 
 Builds assets, starts the Webpack DevServer and watches files for changes.
-
-#### `analyze`
-
-Runs a webpack production build then starts the Webpack Bundle Analyzer. Connect a local port to 8080 to view.
 
 ### Environment vars
 
@@ -140,7 +138,7 @@ Mount the project's web root directory to `/usr/src/site`
 
 Tooling runs from `/usr/src/tools` inside the Docker image. Site files are expected to be mounted to `/usr/src/site`
 
-Requesting `/webpack/reload` from the devserver will will trigger a full reload for all connected clients.
+Requesting [`/webpack/reload`](http://localhost:8080/webpack/reload) from the devserver will will trigger a full reload for all connected clients.
 
 ### Code Splitting and deferred loading
 
@@ -155,6 +153,21 @@ if (some.condition) {
   });
 }
 ```
+
+### Image Handling
+
+Images found in `/src` will be processed as follows:
+
+- **.jpg** - Optimized with Sharp, [Mozjpeg defaults](https://sharp.pixelplumbing.com/api-output#jpeg), 77% quality
+- **.png** - [Sharp defaults](https://sharp.pixelplumbing.com/api-output#png)
+- **.svg** - Copied without processing
+
+Images required into JS source files will be processed by webpack as [general assets](https://webpack.js.org/guides/asset-modules/#general-asset-type) with the following additions:
+
+- **.jpg**
+- **.svg** - Available as SVGR
+
+In pracitce, automated SVG processing was found to be more of a hidrance than helpful. More often it was easier to manually pre-process the files using SVGO, selectively preserving structure and attributes on a per-file basis.
 
 ### Local Development
 
