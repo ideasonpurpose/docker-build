@@ -11,6 +11,8 @@ import chalk from "chalk";
 import devserverProxy from "./lib/devserver-proxy.js";
 
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import { ESBuildMinifyPlugin } from "esbuild-loader";
+
 import CopyPlugin from "copy-webpack-plugin";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import ImageMinimizerPlugin from "image-minimizer-webpack-plugin";
@@ -23,8 +25,10 @@ import ImageminPlugins from "./lib/ImageminPlugins.js";
 import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 
-import * as nodeSass from "node-sass";
-import * as dartSass from "sass";
+import { optimize } from "svgo";
+
+// import * as nodeSass from "node-sass";
+// import * as dartSass from "sass";
 
 // Experimenting with this
 import DependencyExtractionWebpackPlugin from "@wordpress/dependency-extraction-webpack-plugin";
@@ -126,58 +130,78 @@ export default async (env, argv) => {
   return {
     module: {
       rules: [
-        {
-          test: /\.(js|jsx|mjs)$/,
-          include: [
-            path.resolve(config.src),
-            path.resolve("../tools/node_modules"),
-            path.resolve("../site/node_modules"),
-          ],
-          exclude: function (module) {
-            const moduleRegex = new RegExp(
-              `node_modules/(${config.transpileDependencies.join("|")})`
-            );
-            return /node_modules/.test(module) && !moduleRegex.test(module);
-          },
+        // {
+        //   test: /\.(js|jsx|mjs)$/,
+        //   include: [
+        //     path.resolve(config.src),
+        //     path.resolve("../tools/node_modules"),
+        //     path.resolve("../site/node_modules"),
+        //   ],
+        //   exclude: function (module) {
+        //     const moduleRegex = new RegExp(
+        //       `node_modules/(${config.transpileDependencies.join("|")})`
+        //     );
+        //     return /node_modules/.test(module) && !moduleRegex.test(module);
+        //   },
 
-          /**
-           * EXPERIMENTAL!!
-           * If JS compilation breaks, try reverting this first.
-           */
+        //   /**
+        //    * EXPERIMENTAL!!
+        //    * If JS compilation breaks, try reverting this first.
+        //    */
+        //   loader: "esbuild-loader",
+        //   options: {
+        //     loader: "jsx",
+        //     target: "es2015",
+        //   },
+
+        /**
+         * Updated 2022-09, simpler
+         */
+        {
+          test: /\.m?jsx?$/,
           loader: "esbuild-loader",
           options: {
             loader: "jsx",
             target: "es2015",
           },
-
-          // use: {
-          //   loader: "babel-loader",
-          //   options: {
-          //     cacheDirectory: !isProduction,
-          //     sourceType: "unambiguous",
-          //     plugins: [
-          //       "@babel/plugin-syntax-dynamic-import",
-          //       ...(isProduction
-          //         ? []
-          //         : ["@babel/plugin-transform-react-jsx-source"]),
-          //     ],
-          //     presets: [
-          //       [
-          //         "@babel/preset-env",
-          //         {
-          //           forceAllTransforms: true,
-          //           useBuiltIns: "usage",
-          //           configPath: config.src,
-          //           corejs: 3,
-          //           modules: false,
-          //           debug: false,
-          //         },
-          //       ],
-          //       "@babel/preset-react",
-          //     ],
-          //   },
-          // },
         },
+        {
+          test: /\.tsx?$/,
+          loader: "esbuild-loader",
+          options: {
+            loader: "tsx",
+            target: "es2015",
+          },
+        },
+
+        // use: {
+        //   loader: "babel-loader",
+        //   options: {
+        //     cacheDirectory: !isProduction,
+        //     sourceType: "unambiguous",
+        //     plugins: [
+        //       "@babel/plugin-syntax-dynamic-import",
+        //       ...(isProduction
+        //         ? []
+        //         : ["@babel/plugin-transform-react-jsx-source"]),
+        //     ],
+        //     presets: [
+        //       [
+        //         "@babel/preset-env",
+        //         {
+        //           forceAllTransforms: true,
+        //           useBuiltIns: "usage",
+        //           configPath: config.src,
+        //           corejs: 3,
+        //           modules: false,
+        //           debug: false,
+        //         },
+        //       ],
+        //       "@babel/preset-react",
+        //     ],
+        //   },
+        // },
+        // },
         {
           test: /\.(scss|css)$/,
           use: [
@@ -245,7 +269,8 @@ export default async (env, argv) => {
          * twice, once with a hashed name and again with its original name.
          */
         {
-          test: /.(jpe?g|png|gif|tif|webp|svg|avif)$/i,
+          // test: /\.(jpe?g|png|gif|tif|webp|svg|avif)$/i,
+          test: /\.(jpe?g|png|gif|tif|webp|avif)$/i,
           type: "asset",
           // use: [
           //   {
@@ -263,8 +288,42 @@ export default async (env, argv) => {
           //   },
           // ],
         },
+
+        /**
+         * SVGs can be imported as asset urls or React components
+         *
+         * To import an SVG file as a src url, append ?url to the filename:
+         *     import svg from './assets/file.svg?url'
+         *
+         * To import an SVG file as a React component
+
+         * @link https://react-svgr.com/docs/webpack/#use-svgr-and-asset-svg-in-the-same-project
+         */
         {
-          test: /fonts\/.*\.(ttf|eot|woff2?)/i,
+          test: /\.svg$/i,
+          type: "asset",
+          resourceQuery: /url/, // *.svg?url
+        },
+        {
+          test: /\.svg$/i,
+          issuer: /\.[jt]sx?$/,
+          resourceQuery: { not: [/url/] }, // exclude react component if *.svg?url
+          use: ["@svgr/webpack"],
+        },
+        // {
+        //   loader: "svgo-loader",
+        //   options: {
+        //     multipass: true,
+        //     js2svg: {
+        //       indent: 2,
+        //       pretty: true,
+        //     },
+        //   },
+        // },
+        // ],
+        // },
+        {
+          test: /fonts\/.*\.(ttf|eot|woff2?)$/i,
           type: "asset",
         },
       ],
@@ -491,11 +550,45 @@ export default async (env, argv) => {
             globOptions: {
               dot: true, // TODO: Dangerous? Why is this ever necessary?!
               ignore: [
-                "**/{.gitignore,.DS_Store}",
+                // "**/*.svg",
+                "**/{.gitignore,.DS_Store,*:Zone.Identifier}",
                 config.src + "/{blocks,fonts,js,sass}/**",
               ],
             },
           },
+          // {
+          //   from: "**/*.svg",
+          //   to: config.dist,
+
+          //   transform: {
+          //     transformer(content, absoluteFrom) {
+          //       const result = optimize(content.toString(), {
+          //         path: absoluteFrom,
+          //         multipass: true, // boolean. false by default
+          //         js2svg: { pretty: true },
+          //         floatPrecision: 3,
+          //         plugins: [
+          //           {
+          //             name: "preset-default",
+          //             params: {
+          //               overrides: {
+          //                 cleanupIDs: false,
+          //                 removeViewBox: false,
+          //               },
+          //             },
+          //           },
+          //           "sortAttrs",
+          //         ],
+          //       });
+
+          //       // console.log(
+          //       //   content.toString().replace(/[svg]/g, "%%").toString(),
+          //       //   absoluteFrom
+          //       // );
+          //       return Buffer.from(result.data);
+          //     },
+          //   },
+          // },
         ],
         options: { concurrency: 50 },
       }),
@@ -522,10 +615,7 @@ export default async (env, argv) => {
       new BundleAnalyzerPlugin({
         analyzerMode: isProduction ? "static" : "disabled",
         openAnalyzer: false,
-        reportFilename: path.resolve(
-          siteDir,
-          "_builds/webpack-stats/index.html"
-        ),
+        reportFilename: path.resolve(siteDir, "webpack/stats/index.html"),
       }),
     ],
     optimization: {
@@ -534,13 +624,30 @@ export default async (env, argv) => {
         chunks: "all",
       },
       minimizer: [
+        new ESBuildMinifyPlugin({
+          // TODO: Does this blow everything up? Too soon for ES2015 as a baseline?
+          target: "es2015",
+        }),
         new ImageMinimizerPlugin({
           severityError: "error",
 
           minimizer: {
-            implementation: ImageMinimizerPlugin.imageminMinify,
+            // implementation: ImageMinimizerPlugin.imageminMinify,
+            implementation: ImageMinimizerPlugin.sharpMinify,
+
             options: {
-              plugins: ImageminPlugins(isProduction),
+              // plugins: ImageminPlugins(isProduction),
+
+              /**
+               * Sharp options
+               */
+              encodeOptions: {
+                jpeg: {
+                  quality: 2,
+                  mozjpeg: true,
+                },
+                png: {},
+              },
             },
           },
         }),
