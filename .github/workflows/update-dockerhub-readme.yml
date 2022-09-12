@@ -8,11 +8,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
+      # https://github.com/peter-evans/dockerhub-description
       - name: Update Docker Hub Readme
-        uses: peter-evans/dockerhub-description@v2
+        uses: peter-evans/dockerhub-description@v3
         env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USER }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASS }}
-          DOCKERHUB_REPOSITORY: ${{ secrets.DOCKER_NAME }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKERHUB_REPOSITORY: ${{ secrets.DOCKER_REPO_NAME }}

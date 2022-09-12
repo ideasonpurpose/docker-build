@@ -1,35 +1,88 @@
 # This action will push version-tagged and latest images to Docker Hub
-# It requires three secrets to be set:
-#   DOCKER_USER: The Docker Hub username
-#   DOCKER_PASS: The Docker Hub user's password
-#   DOCKER_NAME: The full image name as it appears on Docker Hub
+# This requires three secrets to be ste, the first two should be stored in Organization
+# Secrets, the last is a per-repository secret.
+#   DOCKER_HUB_USERNAME: The Docker Hub username
+#   DOCKER_HUB_ACCESS_TOKEN: Instead of a password
+#   DOCKER_REPO_NAME: The full image name as it appears on Docker Hub
 
 name: Push to Docker Hub
 
 on:
   push:
-    tags: ['v*'] 
+    tags: ["v*"]
 
-env: 
-  DOCKER_USER: ${{ secrets.DOCKER_USER }}
-  DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-  DOCKER_NAME: ${{ secrets.DOCKER_NAME }}  
+# env:
+#   DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+#   DOCKER_PASS: ${{ secrets.DOCKER_HUB_PASSWORD }}
+#   DOCKER_NAME: ${{ secrets.DOCKER_REPO_NAME }}
 jobs:
-
   Deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - name: Build image from Dockerfile
-      run: docker build . --tag $DOCKER_NAME
-    
-    - name: 'Tag image with version'
-      run: docker tag $DOCKER_NAME ${DOCKER_NAME}:${GITHUB_REF#refs/tags/v}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
-    - name: 'Deploy  to Docker Hub'
-      run: |
-        docker login --username $DOCKER_USER --password $DOCKER_PASS
-        docker push $DOCKER_NAME
-        docker push ${DOCKER_NAME}:${GITHUB_REF#refs/tags/v}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
+      - name: Set up REPO and TAG environment vars
+        run: |
+          echo "REPO=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+          echo "TAG=${GITHUB_SHA:0:6}" >> $GITHUB_ENV
+
+      - name: This run was triggered by a version tag, reset the $TAG variable to the tag name
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "TAG=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Create GitHub release
+        if: ${{ contains(github.ref, 'refs/tags/') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create v${TAG}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      # https://github.com/docker/metadata-action
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ secrets.DOCKER_REPO_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      # https://github.com/docker/build-push-action
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # - name: Build image from Dockerfile
+      #   run: docker build . --tag $DOCKER_NAME
+
+      # - name: 'Tag image with version'
+      #   run: docker tag $DOCKER_NAME ${DOCKER_NAME}:${GITHUB_REF#refs/tags/v}
+
+      # - name: 'Deploy  to Docker Hub'
+      #   run: |
+      #     docker login --username $DOCKER_USER --password $DOCKER_PASS
+      #     docker push $DOCKER_NAME
+      #     docker push ${DOCKER_NAME}:${GITHUB_REF#refs/tags/v}
