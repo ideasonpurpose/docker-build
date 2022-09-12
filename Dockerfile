@@ -8,7 +8,8 @@
 
 # Docker Hub node images:
 # https://hub.docker.com/_/node
-FROM node:16.15.0-buster-slim
+FROM node:18.9.0-bullseye-slim
+# FROM node:16.15.0-buster-slim
 # FROM node:14-buster-slim
 
 LABEL version="0.12.0"
@@ -37,7 +38,7 @@ RUN apt-get update -qq \
       dh-autoreconf \
       libgl1-mesa-glx \
       libxi6 \
-      python \
+      python3 \
       jq \
       git \
     && rm -rf /var/lib/apt/lists/*
@@ -50,15 +51,15 @@ RUN apt-get update -qq \
 
 # Install the dart-sass binary, because why not?
 # https://github.com/sass/dart-sass/releases/
-RUN apt-get update -qq \
-    && apt-get install -y --no-install-recommends \
-      ca-certificates \
-      curl \
-    && rm -rf /var/lib/apt/lists/*
-RUN curl -L https://github.com/sass/dart-sass/releases/download/1.49.9/dart-sass-1.49.9-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
-    && tar -C /tmp -xvf /tmp/dart-sass.tar.gz \
-    && mv /tmp/dart-sass/sass /usr/local/bin/sass \
-    && rm -rf /tmp/dart-sass*
+# RUN apt-get update -qq \
+#     && apt-get install -y --no-install-recommends \
+#       ca-certificates \
+#       curl \
+#     && rm -rf /var/lib/apt/lists/*
+# RUN curl -L https://github.com/sass/dart-sass/releases/download/1.49.9/dart-sass-1.49.9-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
+#     && tar -C /tmp -xvf /tmp/dart-sass.tar.gz \
+#     && mv /tmp/dart-sass/sass /usr/local/bin/sass \
+#     && rm -rf /tmp/dart-sass*
 
 # for node:11-alpine
 # RUN apk update && apk add --virtual build-deps build-base git gettext libtool automake autoconf nasm zlib-dev
