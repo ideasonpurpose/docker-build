@@ -5,7 +5,7 @@
 #   DOCKER_HUB_ACCESS_TOKEN: Instead of a password
 #   DOCKER_REPO_NAME: The full image name as it appears on Docker Hub
 
-name: Push to Docker Hub
+name: GitHub Release & Push to Docker Hub
 
 on:
   push:
