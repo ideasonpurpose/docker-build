@@ -1,8 +1,5 @@
-// TODO: Recognize project types and adjust output? WordPress? Jekyll?
 
 import { posix as path } from "path";
-// import { dirname } from "path";
-// import { fileURLToPath } from "url";
 
 import { statSync } from "fs";
 import { cosmiconfigSync } from "cosmiconfig";
@@ -20,25 +17,17 @@ import ImageMinimizerPlugin from "image-minimizer-webpack-plugin";
 import DependencyManifestPlugin from "./lib/DependencyManifestPlugin.js";
 import AfterDoneReporterPlugin from "./lib/AfterDoneReporterPlugin.js";
 import WatchRunReporterPlugin from "./lib/WatchRunReporterPlugin.js";
-import ImageminPlugins from "./lib/ImageminPlugins.js";
+// import ImageminPlugins from "./lib/ImageminPlugins.js";
 
 import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 
-import { optimize } from "svgo";
+// import { optimize } from "svgo";
 
-// import * as nodeSass from "node-sass";
-// import * as dartSass from "sass";
 
 // Experimenting with this
 import DependencyExtractionWebpackPlugin from "@wordpress/dependency-extraction-webpack-plugin";
 
-// console.log(import.meta, __filename, __dirname);
-// console.log({
-// //   _dirname: path.resolve(__dirname, "../site"),
-// //   meta_url: path.resolve(import.meta.url, "../site"),
-//   url: new URL("../site", import.meta.url)
-// });
 
 /**
  * Force `mode: production` when running the analyzer
@@ -90,7 +79,7 @@ const stats = {
   warnings: true,
 };
 
-// const siteDir = path.resolve(__dirname, "../site");
+
 const siteDir = new URL("../site", import.meta.url).pathname;
 const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir);
@@ -99,10 +88,6 @@ import buildConfig from "./lib/buildConfig.js";
 
 const config = buildConfig(configFile);
 
-/**
- * TODO: Is this used?
- */
-// const projectDir = path.resolve(siteDir, config.src, "../");
 
 /**
  * `usePolling` is a placeholder, try and detect native Windows Docker mounts
@@ -117,13 +102,6 @@ const pollInterval = Math.max(
   400
 );
 
-// const devtool = !isProduction
-//   ? config.devtool
-//   : process.env.WEBPACK_BUNDLE_ANALYZER && "hidden-source-map";
-
-// const devtool = isProduction
-//   ? false
-//   : config.devtool || "eval-cheap-source-map";
 const devtool = config.devtool || false;
 
 export default async (env, argv) => {
@@ -272,21 +250,6 @@ export default async (env, argv) => {
           // test: /\.(jpe?g|png|gif|tif|webp|svg|avif)$/i,
           test: /\.(jpe?g|png|gif|tif|webp|avif)$/i,
           type: "asset",
-          // use: [
-          //   {
-          //     loader: "url-loader",
-          //     options: {
-          //       limit: 8192,
-          //       esModule: false,
-          //       fallback: {
-          //         loader: "file-loader",
-          //         options: {
-          //           name: "[name]-[contenthash:8].[ext]",
-          //         },
-          //       },
-          //     },
-          //   },
-          // ],
         },
 
         /**
@@ -500,8 +463,8 @@ export default async (env, argv) => {
 
       watchFiles: {
         paths: [
-          path.resolve(config.src, "../**/*.php"), // WordPress
-          path.resolve(config.src, `../${config.contentBase}/*.html`), // Jekyll
+          path.resolve(config.src, "../**/*.{php,json}"), // WordPress
+          // path.resolve(config.src, `../${config.contentBase}/*.html`), // Jekyll
         ],
         options: {
           ignored: ["**/.git/**", "**/vendor/**", "**/node_modules/**"],
@@ -643,7 +606,7 @@ export default async (env, argv) => {
                */
               encodeOptions: {
                 jpeg: {
-                  quality: 2,
+                  quality: 70,
                   mozjpeg: true,
                 },
                 png: {},
@@ -655,4 +618,3 @@ export default async (env, argv) => {
     },
   };
 };
-// });
