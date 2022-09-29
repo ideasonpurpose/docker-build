@@ -12,7 +12,7 @@ FROM node:18.9.0-bullseye-slim
 # FROM node:16.15.0-buster-slim
 # FROM node:14-buster-slim
 
-LABEL version="0.13.1"
+LABEL version="0.13.2"
 
 # enable color in the terminal
 ENV TERM xterm-256color

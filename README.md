@@ -1,6 +1,6 @@
 # Docker Build Tools
 
-#### Version 0.13.1
+#### Version 0.13.2
 
 <!--[![dockeri.co](https://dockeri.co/image/ideasonpurpose/docker-build)](https://hub.docker.com/r/ideasonpurpose/docker-build)<br> -->
 
