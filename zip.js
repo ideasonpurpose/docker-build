@@ -5,7 +5,7 @@ import url from "url";
 import archiver from "archiver";
 import chalk from "chalk";
 import { cosmiconfigSync } from "cosmiconfig";
-import filesize from "filesize";
+import { filesize } from "filesize";
 import { globby } from "globby";
 import isTextPath from "is-text-path";
 import cliTruncate from "cli-truncate";
@@ -170,7 +170,7 @@ function finishReporter() {
   console.log(
     "👀 ",
     chalk.yellow("Webpack Bundle Analyzer report:"),
-    chalk.magenta("webpack/stats/index.html"),
+    chalk.magenta("webpack/stats/index.html")
   );
   console.log(
     "📦 ",
