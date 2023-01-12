@@ -338,6 +338,8 @@ export default async (env, argv) => {
       allowedHosts: "all",
       setupExitSignals: true,
 
+      // server: 'https', // https://webpack.js.org/configuration/dev-server/#devserverserver
+
       compress: config.devServerCompress || false, // TODO: True by default in devServer v4, exposed via config.devServerCompress to test speed impact
       port: 8080, // hardcoded because Docker bridges to this port
       hot: true,

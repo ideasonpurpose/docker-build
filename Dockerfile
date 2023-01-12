@@ -8,7 +8,7 @@
 
 # Docker Hub node images:
 # https://hub.docker.com/_/node
-FROM node:18.9.0-bullseye-slim
+FROM node:18.13.0-bullseye-slim
 # FROM node:16.15.0-buster-slim
 # FROM node:14-buster-slim
 
@@ -87,6 +87,9 @@ RUN npm clean-install
 
 # total voodoo. https://github.com/imagemin/optipng-bin/issues/84#issuecomment-343403097
 RUN npm rebuild
+
+# What needs to write to cache? https?
+RUN chmod 0755 /usr/src/tools/node_modules/
 
 COPY webpack.config.js ./
 COPY default.config.js ./
