@@ -8,7 +8,7 @@
 
 # Docker Hub node images:
 # https://hub.docker.com/_/node
-FROM node:18.13.0-bullseye-slim
+FROM node:18.16.0-bullseye-slim
 # FROM node:16.15.0-buster-slim
 # FROM node:14-buster-slim
 
@@ -49,13 +49,25 @@ RUN apt-get update -qq \
       # zlib1g-dev \
       # nasm
 
-# Install the dart-sass binary, because why not?
+# Install Dart_SDK then the dart-sass from source
+# https://dart.dev/get-dart
 # https://github.com/sass/dart-sass/releases/
 # RUN apt-get update -qq \
 #     && apt-get install -y --no-install-recommends \
+#       apt-transport-https \
 #       ca-certificates \
-#       curl \
+#       kgpg \
+#       wget \
+#     && curl -L https://storage.googleapis.com/dart-archive/channels/stable/release/latest/linux_packages/dart_2.19.6-1_amd64.deb > /usr/src/dart.deb
+#     && wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/dart.gpg \
+#     && echo 'deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main' | tee /var/lib/apt/lists/dart_stable.list \
+#     && apt-get update -qq \
+#     && apt-get install dart \
 #     && rm -rf /var/lib/apt/lists/*
+
+# RUN curl -L https://storage.googleapis.com/dart-archive/channels/stable/release/latest/linux_packages/dart_2.19.6-1_amd64.deb > /usr/src/dart.deb \
+#       && dpkg --install /usr/src/dart.deb \
+#       && rm /usr/src/dart.deb
 # RUN curl -L https://github.com/sass/dart-sass/releases/download/1.49.9/dart-sass-1.49.9-linux-x64.tar.gz > /tmp/dart-sass.tar.gz \
 #     && tar -C /tmp -xvf /tmp/dart-sass.tar.gz \
 #     && mv /tmp/dart-sass/sass /usr/local/bin/sass \
@@ -80,10 +92,19 @@ RUN apt-get update -qq \
 # Ensure we're running the most recent version of npm
 RUN npm install -g npm
 
-COPY package*.json ./
-RUN npm clean-install
+# TODO: Looks like we can't use package-lock.json for clean-installs
+# since it contains packages from whatever architecture was last used
+COPY package.json ./
+# RUN npm clean-install
+RUN npm install
 # when debugging, try a regular install instead of clean-install
 # RUN npm install
+
+# sass-embedded decided to install platform-specific dependencies
+# so we can't rely on package-lock.json anymore and have to install it
+# separately so each platform's docker image will get the correct executable
+# This uses `jq` to extract the Sass version from package.json
+RUN npm install sass-embedded@$(jq -r .dependencies.sass package.json)
 
 # total voodoo. https://github.com/imagemin/optipng-bin/issues/84#issuecomment-343403097
 RUN npm rebuild

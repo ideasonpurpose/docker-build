@@ -8,7 +8,7 @@ import chalk from "chalk";
 import devserverProxy from "./lib/devserver-proxy.js";
 
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import { ESBuildMinifyPlugin } from "esbuild-loader";
+import { EsbuildPlugin } from "esbuild-loader";
 
 import CopyPlugin from "copy-webpack-plugin";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
@@ -589,7 +589,7 @@ export default async (env, argv) => {
         chunks: "all",
       },
       minimizer: [
-        new ESBuildMinifyPlugin({
+        new EsbuildPlugin({
           // TODO: Does this blow everything up? Too soon for ES2015 as a baseline?
           target: "es2015",
         }),
