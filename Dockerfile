@@ -9,8 +9,6 @@
 # Docker Hub node images:
 # https://hub.docker.com/_/node
 FROM node:18.16.0-bullseye-slim
-# FROM node:16.15.0-buster-slim
-# FROM node:14-buster-slim
 
 LABEL version="0.13.4"
 
@@ -86,19 +84,12 @@ RUN apt-get update -qq \
 #       vim \
 #     && rm -rf /var/lib/apt/lists/*
 
-# Set node cache to use the persistent volume
-# RUN npm config set cache /usr/src/site/webpack/.cache
+# Ensure we're running the most recent version of npm in a clean environment
+RUN rm -rf node_modules \
+    && npm install -g npm
 
-# Ensure we're running the most recent version of npm
-RUN npm install -g npm
-
-# TODO: Looks like we can't use package-lock.json for clean-installs
-# since it contains packages from whatever architecture was last used
 COPY package.json ./
-# RUN npm clean-install
 RUN npm install
-# when debugging, try a regular install instead of clean-install
-# RUN npm install
 
 # sass-embedded decided to install platform-specific dependencies
 # so we can't rely on package-lock.json anymore and have to install it
