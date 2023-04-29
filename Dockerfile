@@ -10,7 +10,7 @@
 # https://hub.docker.com/_/node
 FROM node:18.16.0-bullseye-slim
 
-LABEL version="0.13.4"
+LABEL version="0.13.5"
 
 # enable color in the terminal
 ENV TERM xterm-256color
