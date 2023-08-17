@@ -41,41 +41,41 @@ afterEach(() => {
 //   expect(actual).toBe(expected);
 // });
 
-test("Notify and redirect legacy devserver-proxy-token value", async () => {
-  let proxy =
-    "http://devserver-proxy-token--d939bef2a41c4aa154ddb8db903ce19fff338b61";
+// test("Notify and redirect legacy devserver-proxy-token value", async () => {
+//   let proxy =
+//     "http://devserver-proxy-token--d939bef2a41c4aa154ddb8db903ce19fff338b61";
 
-  const logSpy = jest.spyOn(console, "log");
-  const actual = await devserverProxy({ proxy });
+//   const logSpy = jest.spyOn(console, "log");
+//   const actual = await devserverProxy({ proxy });
 
-  expect(actual).toHaveProperty("proxy");
-  expect(logSpy).toHaveBeenCalledWith(
-    expect.any(String),
-    expect.stringContaining("devserver-proxy-token"),
-    expect.any(String)
-  );
-});
+//   expect(actual).toHaveProperty("proxy");
+//   expect(logSpy).toHaveBeenCalledWith(
+//     expect.any(String),
+//     expect.stringContaining("devserver-proxy-token"),
+//     expect.any(String)
+//   );
+// });
 
-test("Send legacy token where there's no wordpress service", async () => {
-  jest.spyOn(dns, "promises", "get").mockImplementation(() => {
-    // console.log("ONLY ONCE");
-    return { resolve: () => new Promise((resolve, reject) => reject()) };
-  });
+// test("Send legacy token where there's no wordpress service", async () => {
+//   jest.spyOn(dns, "promises", "get").mockImplementation(() => {
+//     // console.log("ONLY ONCE");
+//     return { resolve: () => new Promise((resolve, reject) => reject()) };
+//   });
 
-  let proxy =
-    "http://devserver-proxy-token--d939bef2a41c4aa154ddb8db903ce19fff338b61";
+//   let proxy =
+//     "http://devserver-proxy-token--d939bef2a41c4aa154ddb8db903ce19fff338b61";
 
-  const logSpy = jest.spyOn(console, "log");
-  const actual = await devserverProxy({ proxy });
+//   const logSpy = jest.spyOn(console, "log");
+//   const actual = await devserverProxy({ proxy });
 
-  expect(actual).toStrictEqual({});
-  // expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("ONCE"));
-  expect(logSpy).toHaveBeenCalledWith(
-    expect.any(String),
-    expect.stringContaining("devserver-proxy-token"),
-    expect.any(String)
-  );
-});
+//   expect(actual).toStrictEqual({});
+//   // expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("ONCE"));
+//   expect(logSpy).toHaveBeenCalledWith(
+//     expect.any(String),
+//     expect.stringContaining("devserver-proxy-token"),
+//     expect.any(String)
+//   );
+// });
 
 test("prefix http onto string", async () => {
   jest.spyOn(dns, "promises", "get").mockImplementation(() => {

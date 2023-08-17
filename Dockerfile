@@ -8,7 +8,9 @@
 
 # Docker Hub node images:
 # https://hub.docker.com/_/node
-FROM node:18.16.0-bullseye-slim
+# FROM node:18.17.1-bullseye-slim
+# FROM node:18.17.1-bookworm-slim
+FROM node:20.5.1-bookworm-slim
 
 LABEL version="0.13.5"
 

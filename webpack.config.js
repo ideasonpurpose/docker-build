@@ -1,4 +1,3 @@
-
 import { posix as path } from "path";
 
 import { statSync } from "fs";
@@ -24,10 +23,8 @@ import cssnano from "cssnano";
 
 // import { optimize } from "svgo";
 
-
 // Experimenting with this
 import DependencyExtractionWebpackPlugin from "@wordpress/dependency-extraction-webpack-plugin";
-
 
 /**
  * Force `mode: production` when running the analyzer
@@ -79,7 +76,6 @@ const stats = {
   warnings: true,
 };
 
-
 const siteDir = new URL("../site", import.meta.url).pathname;
 const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir);
@@ -87,7 +83,6 @@ const configFile = explorerSync.search(siteDir);
 import buildConfig from "./lib/buildConfig.js";
 
 const config = buildConfig(configFile);
-
 
 /**
  * `usePolling` is a placeholder, try and detect native Windows Docker mounts
@@ -344,7 +339,7 @@ export default async (env, argv) => {
       port: 8080, // hardcoded because Docker bridges to this port
       hot: true,
       client: {
-        logging: "info", // TODO: New, is this ok?
+        logging: "error", // TODO: New, is this ok?
         overlay: { warnings: true, errors: true },
         progress: true, // TODO: New, is this ok?
         reconnect: 30,
@@ -352,6 +347,7 @@ export default async (env, argv) => {
           port: parseInt(process.env.PORT), // external port, so websockets hit the right endpoint
         },
       },
+      webSocketServer: "ws",
       static: {
         // TODO: Should contentBase be `false` when there's a proxy?
         directory: path.join("/usr/src/site/", config.contentBase),
