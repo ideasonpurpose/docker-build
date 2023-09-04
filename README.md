@@ -44,7 +44,7 @@ This is the public url path to the dist folder. Web browsers will reference our 
 
 #### `sass` (optional)
 
-Specify the Sass implementation to use. Used by [Sass-loader][]. Supports `node-sass` ([LibSass][]), `sass` ([Dart-sass][]) and `sass-embedded` ([embedded-host-node][]). Default: **`sass-embedded`**
+Specify the Sass implementation for [Sass-loader][]. Supports `sass-embedded` ([embedded-host-node][], native) and `sass` ([js-compiled Dart-sass][]). Default: **`sass-embedded`**,  [`node-sass`][] is no longer supported
 
 #### `proxy` (optional)
 
@@ -207,7 +207,7 @@ This toolset is installed with our [Docker-based WordPress development environme
 <a href="https://www.ideasonpurpose.com"><img src="https://raw.githubusercontent.com/ideasonpurpose/ideasonpurpose/master/IOP_monogram_circle_512x512_mint.png" height="44" align="top" alt="IOP Logo"></a><img src="https://raw.githubusercontent.com/ideasonpurpose/ideasonpurpose/master/spacer.png" align="middle" width="4" height="54"> This project is actively developed and used in production at <a href="https://www.ideasonpurpose.com">Ideas On Purpose</a>.
 
 [sass-loader]: https://webpack.js.org/loaders/sass-loader/
-[libsass]: https://github.com/sass/node-sass
+[node-sass]: https://github.com/sass/node-sass
 [dart-sass]: https://github.com/sass/dart-sass
 [embedded-host-node]: https://github.com/sass/embedded-host-node
 [cosmiconfig]: https://www.npmjs.com/package/cosmiconfig

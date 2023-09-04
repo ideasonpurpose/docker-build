@@ -23,6 +23,12 @@ import cssnano from "cssnano";
 
 // import { optimize } from "svgo";
 
+/**
+ * Sass flavors for conditional sass-loader implementations
+ */
+import * as nodeSass from "sass";
+import * as dartSass from "sass-embedded";
+
 // Experimenting with this
 import DependencyExtractionWebpackPlugin from "@wordpress/dependency-extraction-webpack-plugin";
 
@@ -209,22 +215,18 @@ export default async (env, argv) => {
             {
               loader: "sass-loader",
               options: {
-                // implementation: require(config.sass),
-                // implementation: config.sass == "sass" ? dartSass : nodeSass,
-                implementation: config.sass,
+                implementation: config.sass === 'sass'  ? nodeSass : dartSass,
+                // implementation: await import(config.sass),
                 sourceMap: !isProduction,
-                // sourceMap: true,
+                warnRuleAsWarning: true,
                 webpackImporter: false,
                 sassOptions: {
-                  includePaths: [
-                    path.resolve(config.src, "sass"),
-                    path.resolve("../site/node_modules"),
-                  ],
-                  outputStyle: "expanded",
-                  // TODO: Drop this when we drop node-sass
-                  ...(config.sass === "node-sass"
-                    ? { sourceComments: true }
-                    : {}),
+                  // loadPaths: [
+                  //   path.resolve(config.src, "sass"),
+                  //   path.resolve("../site/node_modules"),
+                  // ],
+                  style: "expanded",
+                  verbose: true
                 },
               },
             },

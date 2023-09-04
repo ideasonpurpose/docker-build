@@ -33,9 +33,8 @@
  *      Simple names may cause issues as page contents will be rewritten to replace the default url
  *      with this value.
  *
- * @property {('sass'|'node-sass'|'dart-sass'|'sass-embedded')} [sass=node-sass] - The Sass implementation to use<br>
- *      Supports Node-sass and Dart-Sass. 'dart-sass' is an alias for 'sass-embedded'
- *      {@link https://github.com/sass/node-sass|Node-sass (LibSass)}
+ * @property {string} [sass=sass-embedded] - The Sass implementation to use<br>
+ *      Supports Node-sass and Dart-Sass (sass-embedded)
  *      {@link https://github.com/sass/dart-sass|Dart-Sass (canonical Sass)}
  *      {@link https://github.com/sass/embedded-host-node|Sass-Embedded (native dart-Sass)}
  *
@@ -74,7 +73,7 @@ const defaultConfig = {
   publicPath: "/dist/",
   contentBase: "/dist/", // TODO: Should this be false?
   manifestFile: "./dependency-manifest.json",
-  sass: "sass",
+  sass: "sass-embedded",
   port: 8080,
   transpileDependencies: ["ansi-regex", "normalize-url"],
   proxy: 'wordpress',
