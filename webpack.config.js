@@ -16,12 +16,9 @@ import ImageMinimizerPlugin from "image-minimizer-webpack-plugin";
 import DependencyManifestPlugin from "./lib/DependencyManifestPlugin.js";
 import AfterDoneReporterPlugin from "./lib/AfterDoneReporterPlugin.js";
 import WatchRunReporterPlugin from "./lib/WatchRunReporterPlugin.js";
-// import ImageminPlugins from "./lib/ImageminPlugins.js";
 
 import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
-
-// import { optimize } from "svgo";
 
 /**
  * Sass flavors for conditional sass-loader implementations
@@ -215,7 +212,7 @@ export default async (env, argv) => {
             {
               loader: "sass-loader",
               options: {
-                implementation: config.sass === 'sass'  ? nodeSass : dartSass,
+                implementation: config.sass === "sass" ? nodeSass : dartSass,
                 // implementation: await import(config.sass),
                 sourceMap: !isProduction,
                 warnRuleAsWarning: true,
@@ -226,7 +223,7 @@ export default async (env, argv) => {
                   //   path.resolve("../site/node_modules"),
                   // ],
                   style: "expanded",
-                  verbose: true
+                  verbose: true,
                 },
               },
             },
@@ -309,25 +306,22 @@ export default async (env, argv) => {
     entry: config.entry,
 
     output: {
-      // path: path.resolve(__dirname, config.dist),
       path: new URL(config.dist, import.meta.url).pathname,
-      // pathinfo: false,
       /**
-       * Primary output filenames SHOULD NOT include hashes in development
+       * Primary output filenames SHOULD NOT include hashes in development because
+       * some files are written to disk from devServer middleware. Because those
+       * files are written outside standard webpack output, they aren't cleaned
+       * up by standard webpack cleaning functions.
        */
       filename: isProduction ? "[name]-[contenthash:8].js" : "[name].js",
       chunkFilename: "[id]-[chunkhash:8].js",
       publicPath: config.publicPath,
       /**
-       * TODO: Check that clean is a sound replacement for the clean-webpack plugin (might not be)
-       *
-       * @link https://github.com/johnagan/clean-webpack-plugin/issues/197
+       * Assets are not cleaned when writeToDisk is true in devServer
+       * Works correctly with builds.
        * @link https://github.com/webpack/webpack-dev-middleware/issues/861
        */
       clean: true,
-      // clean: {
-      //   dry: true, // Log the assets that should be removed instead of deleting them.
-      // },
     },
 
     devServer: {
@@ -595,12 +589,9 @@ export default async (env, argv) => {
           severityError: "error",
 
           minimizer: {
-            // implementation: ImageMinimizerPlugin.imageminMinify,
             implementation: ImageMinimizerPlugin.sharpMinify,
 
             options: {
-              // plugins: ImageminPlugins(isProduction),
-
               /**
                * Sharp options
                */
