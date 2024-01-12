@@ -167,7 +167,7 @@ Images required into JS source files will be processed by webpack as [general as
 - **.jpg**
 - **.svg** - Available as SVGR
 
-In pracitce, automated SVG processing was found to be more of a hidrance than helpful. More often it was easier to manually pre-process the files using SVGO, selectively preserving structure and attributes on a per-file basis.
+In practice, automated SVG processing was found to be more of a hindrance than helpful. More often it was easier to manually pre-process the files using SVGO, selectively preserving structure and attributes on a per-file basis.
 
 ### Local Development
 
