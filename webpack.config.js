@@ -84,8 +84,11 @@ const explorerSync = cosmiconfigSync("ideasonpurpose");
 const configFile = explorerSync.search(siteDir);
 
 import buildConfig from "./lib/buildConfig.js";
+// import siteConfig from '../site/ideasonpurpose.config.js';
 
-const config = buildConfig(configFile);
+// console.log({configFile})
+
+const config = buildConfig(configFile ?? siteConfig);
 
 /**
  * `usePolling` is a placeholder, try and detect native Windows Docker mounts
@@ -101,6 +104,8 @@ const pollInterval = Math.max(
 );
 
 const devtool = config.devtool || false;
+
+// console.log({config})
 
 export default async (env, argv) => {
   return {
@@ -218,6 +223,10 @@ export default async (env, argv) => {
                 warnRuleAsWarning: true,
                 webpackImporter: false,
                 sassOptions: {
+                  includePaths: [
+                    path.resolve(config.src, "sass"),
+                    path.resolve("../site/node_modules"),
+                  ],
                   // loadPaths: [
                   //   path.resolve(config.src, "sass"),
                   //   path.resolve("../site/node_modules"),
@@ -371,12 +380,14 @@ export default async (env, argv) => {
         writeToDisk: (filePath) => {
           /**
            * Note: If this is an async function, it will write everything to disk
-           *
-           * Never write hot-update files to disk.
-           */
-          if (/.+hot-update\.(js|json)$/.test(filePath)) {
-            return false;
+          *
+          * Never write hot-update files to disk.
+          */
+         if (/.+hot-update\.(js|json)$/.test(filePath)) {
+           return false;
           }
+          // SHORT_CIRCUIT FOR TESTING
+          return true;
 
           if (/.+\.(svg|json|php|jpg|png)$/.test(filePath)) {
             const fileStat = statSync(filePath, { throwIfNoEntry: false });
