@@ -12,7 +12,7 @@
 # FROM node:18.17.1-bookworm-slim
 FROM node:20.5.1-bookworm-slim
 
-LABEL version="0.14.1"
+LABEL version="0.15.0"
 
 # enable color in the terminal
 ENV TERM xterm-256color
