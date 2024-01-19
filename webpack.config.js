@@ -380,11 +380,11 @@ export default async (env, argv) => {
         writeToDisk: (filePath) => {
           /**
            * Note: If this is an async function, it will write everything to disk
-          *
-          * Never write hot-update files to disk.
-          */
-         if (/.+hot-update\.(js|json)$/.test(filePath)) {
-           return false;
+           *
+           * Never write hot-update files to disk.
+           */
+          if (/.+hot-update\.(js|json|js\.map)$/.test(filePath)) {
+            return false;
           }
           // SHORT_CIRCUIT FOR TESTING
           return true;
