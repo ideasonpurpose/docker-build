@@ -80,15 +80,16 @@ const stats = {
 };
 
 const siteDir = new URL("../site", import.meta.url).pathname;
-const explorerSync = cosmiconfigSync("ideasonpurpose");
-const configFile = explorerSync.search(siteDir);
+// const explorerSync = cosmiconfigSync("ideasonpurpose");
+// const configFile = explorerSync.search(siteDir);
 
 import buildConfig from "./lib/buildConfig.js";
-// import siteConfig from '../site/ideasonpurpose.config.js';
+import siteConfig from "../site/ideasonpurpose.config.js";
 
 // console.log({configFile})
 
-const config = buildConfig(configFile ?? siteConfig);
+// const config = buildConfig(configFile ?? siteConfig);
+const config = buildConfig({ config: siteConfig });
 
 /**
  * `usePolling` is a placeholder, try and detect native Windows Docker mounts
@@ -109,6 +110,7 @@ const devtool = config.devtool || false;
 
 export default async (env, argv) => {
   return {
+    // stats,
     module: {
       rules: [
         // {
@@ -419,7 +421,6 @@ export default async (env, argv) => {
           }
           return false;
         },
-        stats,
       },
 
       // NOTE: trying to make injection conditional so wp-admin stops reloading
@@ -500,13 +501,6 @@ export default async (env, argv) => {
     },
 
     plugins: [
-      // ...(isProduction ? [new webpack.ProgressPlugin()] : []),
-      // new webpack.ProgressPlugin(),
-
-      // new webpack.debug.ProfilingPlugin({
-      //   outputPath: path.resolve(siteDir, "_builds/webpack-stats/profile.json"),
-      // }),
-
       new MiniCssExtractPlugin({
         filename: isProduction ? "[name]-[contenthash:8].css" : "[name].css",
       }),
@@ -518,51 +512,16 @@ export default async (env, argv) => {
             globOptions: {
               dot: true, // TODO: Dangerous? Why is this ever necessary?!
               ignore: [
-                // "**/*.svg",
                 "**/{.gitignore,.DS_Store,*:Zone.Identifier}",
                 config.src + "/{blocks,fonts,js,sass}/**",
               ],
             },
           },
-          // {
-          //   from: "**/*.svg",
-          //   to: config.dist,
-
-          //   transform: {
-          //     transformer(content, absoluteFrom) {
-          //       const result = optimize(content.toString(), {
-          //         path: absoluteFrom,
-          //         multipass: true, // boolean. false by default
-          //         js2svg: { pretty: true },
-          //         floatPrecision: 3,
-          //         plugins: [
-          //           {
-          //             name: "preset-default",
-          //             params: {
-          //               overrides: {
-          //                 cleanupIDs: false,
-          //                 removeViewBox: false,
-          //               },
-          //             },
-          //           },
-          //           "sortAttrs",
-          //         ],
-          //       });
-
-          //       // console.log(
-          //       //   content.toString().replace(/[svg]/g, "%%").toString(),
-          //       //   absoluteFrom
-          //       // );
-          //       return Buffer.from(result.data);
-          //     },
-          //   },
-          // },
         ],
         options: { concurrency: 50 },
       }),
 
       /**
-       * Experimental
        * @link https://developer.wordpress.org/block-editor/reference-guides/packages/packages-dependency-extraction-webpack-plugin/
        */
       new DependencyExtractionWebpackPlugin(),
@@ -588,7 +547,6 @@ export default async (env, argv) => {
     ],
     optimization: {
       splitChunks: {
-        // include all types of chunks
         chunks: "all",
       },
       minimizer: [
