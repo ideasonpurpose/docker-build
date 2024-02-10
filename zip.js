@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import { posix as path } from "path";
 import url from "url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import archiver from "archiver";
 import chalk from "chalk";
@@ -24,15 +25,33 @@ import { prettierHrtime } from "./lib/prettier-hrtime.js";
  */
 let siteDirBase = process.argv[2] || "/usr/src/site/";
 siteDirBase += siteDirBase.endsWith("/") ? "" : "/";
-const siteDir = new URL(siteDirBase, import.meta.url);
+// const siteDir = new URL(siteDirBase, import.meta.url);
 
-const explorerSync = cosmiconfigSync("ideasonpurpose");
-const configFile = explorerSync.search(siteDir.pathname) || {
-  config: {},
-  filepath: siteDir.pathname,
+// const explorerSync = cosmiconfigSync("ideasonpurpose");
+// const configFile = explorerSync.search(siteDir.pathname) || {
+//   config: {},
+//   filepath: siteDir.pathname,
+// };
+// const configFileUrl = url.pathToFileURL(configFile.filepath);
+// const config = buildConfig(configFile);
+
+// const explorerSync = cosmiconfigSync("ideasonpurpose");
+// const configFile = explorerSync.search(siteDir);
+
+const configFile = {
+  filepath: fileURLToPath(
+    new URL("../site/ideasonpurpose.config.js", import.meta.url)
+  ),
 };
-const configFileUrl = url.pathToFileURL(configFile.filepath);
-const config = buildConfig(configFile);
+const configFileUrl = pathToFileURL(configFile.filepath);
+
+// import buildConfig from "./lib/buildConfig.js";
+import siteConfig from "../site/ideasonpurpose.config.js";
+
+console.log({ configFile, configFileUrl });
+
+// const config = buildConfig(configFile ?? siteConfig);
+const config = buildConfig({ config: siteConfig });
 
 const packageJson = fs.readJsonSync(new URL("package.json", configFileUrl));
 packageJson.version ??= "";
