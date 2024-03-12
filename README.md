@@ -9,7 +9,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/ideasonpurpose/docker-build/badge.svg?branch=master)](https://coveralls.io/github/ideasonpurpose/docker-build?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/a6fabc9730a3b90b255c/maintainability)](https://codeclimate.com/github/ideasonpurpose/docker-build/maintainability)
 
-This repository is the source for Docker AutoBuilds. Get the image on DockerHub: [hub.docker.com/r/ideasonpurpose/docker-build](https://hub.docker.com/r/ideasonpurpose/docker-build)
+This repository is the source for our local Docker-based WordPress development environment, it can be used for themes and plugins. Get the image on DockerHub: [hub.docker.com/r/ideasonpurpose/docker-build](https://hub.docker.com/r/ideasonpurpose/docker-build)
 
 ## Configuration
 
@@ -69,7 +69,7 @@ module.exports = {
   src: `./wp-content/themes/${pkg.name}/src`,
   dist: `./wp-content/themes/${pkg.name}/dist`,
   entry: ["./js/main.js", "./js/admin.js", "./js/editor.js"],
-  publicPath: "/wp-content/themes/my-theme-name/dist/",
+  publicPath: `/wp-content/themes/${pkg.name}/dist/`,
 };
 ```
 
