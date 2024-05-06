@@ -75,6 +75,8 @@ const defaultConfig = {
   manifestFile: "./dependency-manifest.json",
   sass: "sass-embedded",
   port: 8080,
+  esTarget: "es2020",
+  devtool: false,
   transpileDependencies: ["ansi-regex", "normalize-url"],
   proxy: 'wordpress',
 };

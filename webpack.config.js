@@ -106,6 +106,9 @@ const pollInterval = Math.max(
 
 const devtool = config.devtool || false;
 
+config.esTarget = config.esTarget || "es2020"; // was "es2015"
+
+
 // console.log({config})
 
 export default async (env, argv) => {
@@ -138,24 +141,19 @@ export default async (env, argv) => {
         //   },
 
         /**
-         * Updated 2022-09, simpler
+         * Updated again 2024-05 even simpler
          */
         {
-          test: /\.m?jsx?$/,
+          test: /\.[jt]sx?$/,
+          // test: /\.js$/,
           loader: "esbuild-loader",
           options: {
             loader: "jsx",
-            target: "es2015",
+            target: config.esTarget,
           },
         },
-        {
-          test: /\.tsx?$/,
-          loader: "esbuild-loader",
-          options: {
-            loader: "tsx",
-            target: "es2015",
-          },
-        },
+
+
 
         // use: {
         //   loader: "babel-loader",
@@ -513,10 +511,11 @@ export default async (env, argv) => {
               dot: true, // TODO: Dangerous? Why is this ever necessary?!
               ignore: [
                 "**/{.gitignore,.DS_Store,*:Zone.Identifier}",
-                config.src + "/{blocks,fonts,js,sass}/**",
+                config.src + "/{block,blocks,fonts,js,sass}/**",
               ],
             },
           },
+          { from: config.src + "/{block,blocks}/**/block.json" }, // re-add block.json files for loading from PHP
         ],
         options: { concurrency: 50 },
       }),
@@ -551,8 +550,8 @@ export default async (env, argv) => {
       },
       minimizer: [
         new EsbuildPlugin({
-          // TODO: Does this blow everything up? Too soon for ES2015 as a baseline?
-          target: "es2015",
+          target: config.esTarget,
+          css: true
         }),
         new ImageMinimizerPlugin({
           severityError: "error",
