@@ -108,7 +108,6 @@ const devtool = config.devtool || false;
 
 config.esTarget = config.esTarget || "es2020"; // was "es2015"
 
-
 // console.log({config})
 
 export default async (env, argv) => {
@@ -152,8 +151,6 @@ export default async (env, argv) => {
             target: config.esTarget,
           },
         },
-
-
 
         // use: {
         //   loader: "babel-loader",
@@ -515,7 +512,10 @@ export default async (env, argv) => {
               ],
             },
           },
-          { from: config.src + "/{block,blocks}/**/block.json" }, // re-add block.json files for loading from PHP
+          {
+            from: config.src + "/{block,blocks}/**/block.json",
+            noErrorOnMissing: true,
+          }, // re-add block.json files for loading from PHP
         ],
         options: { concurrency: 50 },
       }),
@@ -551,7 +551,7 @@ export default async (env, argv) => {
       minimizer: [
         new EsbuildPlugin({
           target: config.esTarget,
-          css: true
+          css: true,
         }),
         new ImageMinimizerPlugin({
           severityError: "error",
