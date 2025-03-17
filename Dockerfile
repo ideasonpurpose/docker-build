@@ -10,17 +10,17 @@
 # https://hub.docker.com/_/node
 # FROM node:18.17.1-bullseye-slim
 # FROM node:18.17.1-bookworm-slim
-FROM node:20.15-bookworm-slim
+FROM node:22-bookworm-slim
 
 LABEL version="0.17.5"
 
 # enable color in the terminal
-ENV TERM xterm-256color
-ENV npm_config_cache /usr/src/site/webpack/.cache
+ENV TERM=xterm-256color
+ENV npm_config_cache=/usr/src/site/webpack/.cache
 
 # Disable npm update checks. Not just npm, and no idea where this is documented, but it works
 # Well it did before node 16
-ENV NO_UPDATE_NOTIFIER true
+ENV NO_UPDATE_NOTIFIER=true
 # Found this solution here: https://stackoverflow.com/a/60525400
 # ... but since the Dockerfile runs as root, the setting won't be available to the user
 # RUN npm config set update-notifier false
