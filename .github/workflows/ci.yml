@@ -5,30 +5,48 @@ on:
     branches: [master]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # https://github.com/actions/setup-node
       - name: Node Setup
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.16
+          node-version: "22" # Updated to Node 20 LTS
+          cache: "npm"
 
-      - name: npm install & test
-        run: |
-          npm install
-          npm run test
+      - name: Install dependencies
+        run: npm install
 
+      - name: Run tests
+        run: npm run test
+
+      # https://github.com/marketplace/actions/coveralls-github-action
       - name: Coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2.2.3 # Pinned to a stable version
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # https://github.com/marketplace/actions/code-climate-coverage-action
       - name: Code Climate
-        uses: paambaati/codeclimate-action@v2.7.5
+        uses: paambaati/codeclimate-action@v9.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+
+      # https://github.com/marketplace/actions/upload-a-build-artifact
+      - name: Upload test artifacts
+        if: always() # Run even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: |
+            coverage/
+            *.log
