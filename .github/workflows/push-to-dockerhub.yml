@@ -33,7 +33,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} --generate-notes --fail-if-exists
+          gh release create ${{ github.ref_name }} --generate-notes
 
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
