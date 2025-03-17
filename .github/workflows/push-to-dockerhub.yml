@@ -77,9 +77,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Log GitHub Context
-        run: echo "${{ toJSON(github) }}"
-
   Update-Readme:
     runs-on: ubuntu-24.04
     needs: Deploy # Run only if Deploy succeeds
