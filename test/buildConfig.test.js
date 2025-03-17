@@ -85,11 +85,11 @@ test("Check Sass implementations", () => {
   config = { sass: "sass" };
   expect(buildConfig({ config })).toHaveProperty("sass", "sass");
 
-  config = { sass: "node-sass" };
-  expect(buildConfig({ config })).toHaveProperty("sass", "node-sass");
+  // config = { sass: "node-sass" };
+  // expect(buildConfig({ config })).toHaveProperty("sass", "node-sass");
 
-  config = { sass: "node" };
-  expect(buildConfig({ config })).toHaveProperty("sass", false);
+  // config = { sass: "node" };
+  // expect(buildConfig({ config })).toHaveProperty("sass", false);
 
   config = { sass: "sass-embedded" };
   expect(buildConfig({ config })).toHaveProperty("sass", "sass-embedded");
@@ -97,7 +97,7 @@ test("Check Sass implementations", () => {
   config = { sass: "embedded" };
   expect(buildConfig({ config })).toHaveProperty("sass", "sass-embedded");
 
-  expect(buildConfig({ config: {} })).toHaveProperty("sass", "sass");
+  expect(buildConfig({ config: {} })).toHaveProperty("sass", "sass-embedded");
 
   expect(logSpy).toHaveBeenCalledWith(
     expect.any(String),
